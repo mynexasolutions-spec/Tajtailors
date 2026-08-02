@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ivory text-ink font-body antialiased;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold-600;
+  }
+
+  .section-heading {
+    @apply font-display text-3xl md:text-[2.9rem] leading-[1.08] tracking-tight text-ink;
+  }
+
+  .gold-line {
+    @apply h-px w-10 bg-gradient-to-r from-transparent via-gold-300 to-transparent;
+  }
+
+  .btn-gold {
+    @apply relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gold-gradient bg-[length:200%_200%] px-7 py-3 text-sm font-semibold tracking-wide text-ink shadow-gold transition-all duration-300 hover:bg-right hover:shadow-lg;
+  }
+
+  .btn-gold::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.55) 50%, transparent 60%);
+    transform: translateX(-120%);
+    transition: transform 0.6s ease;
+  }
+
+  .btn-gold:hover::before {
+    transform: translateX(120%);
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-gold-400/50 px-7 py-3 text-sm font-semibold tracking-wide text-ink transition-all duration-300 hover:border-gold-500 hover:bg-gold-400/10;
+  }
+
+  .card-panel {
+    @apply rounded-2xl border border-ink/10 bg-white/70 backdrop-blur-sm;
+  }
+
+  .reveal {
+    opacity: 0;
+  }
+
+  .reveal.in-view {
+    animation: fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+}
+
+::selection {
+  background: rgba(202, 161, 75, 0.35);
+  color: #12100e;
+}
+
+/* Thin, gold-tinted scrollbar for a more considered feel */
+html {
+  scrollbar-width: thin;
+}
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+::-webkit-scrollbar-thumb {
+  background: #dcb35f;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #caa14b;
+}
+
+/* Hides the scrollbar on horizontal touch-scroll strips (category rail, carousels) */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

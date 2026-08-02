@@ -1,0 +1,254 @@
+"use client";
+
+import { useState } from "react";
+import { Mail, Phone, Copy, Check, ChevronDown, Clock, ArrowUpRight, Instagram, Facebook, Youtube } from "lucide-react";
+import { BRAND, whatsappLink } from "@/lib/constants";
+import ContactForm from "./ContactForm";
+import Reveal from "@/components/Reveal";
+
+const FAQS = [
+  {
+    q: "How do I get stitched without visiting a shop?",
+    a: "Just share your measurements using our simple guide, or send us an old, well-fitting garment as a reference — our tailors will match the sizing exactly. No shop visit needed.",
+  },
+  {
+    q: "How fast do you ship orders across India?",
+    a: "We ship all orders within 24 hours of stitching completion. Delivery usually takes 2 to 5 business days depending on your city.",
+  },
+  {
+    q: "Do you offer bulk or corporate orders?",
+    a: "Yes, we do. We take bulk stitching orders for weddings, corporate uniforms, and events. Contact us via the form or WhatsApp for bulk pricing.",
+  },
+  {
+    q: "Can I send my own fabric to be stitched?",
+    a: "Absolutely. Choose \"Stitch My Fabric\" at checkout, and our courier will pick up your fabric from your doorstep for stitching.",
+  },
+];
+
+export default function ContactContent() {
+  const [copiedEmail, setCopiedEmail] = useState(false);
+  const [openFaq, setOpenFaq] = useState(null);
+
+  const handleCopyEmail = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(BRAND.email);
+    setCopiedEmail(true);
+    setTimeout(() => setCopiedEmail(false), 2500);
+  };
+
+  return (
+    <div className="mx-auto max-w-wrap px-6 md:px-12 relative">
+
+      {/* Hero Header */}
+      <div className="relative mx-auto max-w-3xl text-center mb-10 sm:mb-16">
+        <Reveal>
+          {/* Status Pill */}
+          <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-gold-400/25 bg-white px-3 sm:px-4 py-1.5 shadow-soft mb-6">
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            <span className="text-[9px] sm:text-[11px] font-semibold uppercase tracking-wide sm:tracking-wider text-ink/75">
+              Support Desk Active <span className="mx-1 text-gold-500/50">•</span> Usually replies in &lt; 2 hrs
+            </span>
+          </div>
+
+          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight text-ink leading-none">
+            Contact <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-gold-600 via-gold-500 to-gold-700">Us</span>
+          </h1>
+          <p className="mt-6 text-base sm:text-lg text-ink/60 max-w-xl mx-auto font-semibold leading-relaxed">
+            Have questions about fabrics, stitching, or measurements? We are here to help you.
+          </p>
+        </Reveal>
+      </div>
+
+      {/* Main Grid Section */}
+      <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12 items-start">
+        
+        {/* Left Column: Direct Channels & Information */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6 lg:col-span-5">
+          
+          {/* Email Card */}
+          <Reveal delay={80} className="h-full">
+            <div className="group relative overflow-hidden rounded-[2rem] border border-gold-400/10 bg-white p-6 shadow-soft transition-all duration-500 hover:border-gold-400/35 hover:shadow-[0_0_30px_rgba(212,163,89,0.06)] hover:-translate-y-1 h-full flex flex-col justify-between">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gold-400/10 text-gold-600 ring-1 ring-gold-400/20 group-hover:scale-105 transition-transform duration-500">
+                    <Mail className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-gold-600">
+                      Email Us
+                    </span>
+                    <p className="font-display mt-0.5 text-base sm:text-lg text-ink group-hover:text-gold-700 transition-colors break-all">
+                      {BRAND.email}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleCopyEmail}
+                  title="Copy Email"
+                  className="rounded-xl border border-ink/10 bg-ivory-deep p-2.5 text-ink/60 hover:border-gold-400/40 hover:text-gold-700 transition-all shrink-0"
+                >
+                  {copiedEmail ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                </button>
+              </div>
+              <div className="mt-6 flex items-center justify-between border-t border-ink/10 pt-4 text-sm text-ink/50">
+                <span>For questions & support</span>
+                <a
+                  href={`mailto:${BRAND.email}`}
+                  className="inline-flex items-center gap-1 text-gold-600 hover:text-gold-700 font-medium"
+                >
+                  Send email <ArrowUpRight className="h-3 w-3" />
+                </a>
+              </div>
+            </div>
+          </Reveal>
+
+          {/* WhatsApp Card */}
+          <Reveal delay={120} className="h-full">
+            <a
+              href={whatsappLink("Hi Taj Tailor, I would like to inquire about your tailoring services.")}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group block relative overflow-hidden rounded-[2rem] border border-gold-400/10 bg-white p-6 shadow-soft transition-all duration-500 hover:border-emerald-500/30 hover:shadow-[0_0_30px_rgba(16,185,129,0.06)] hover:-translate-y-1 h-full flex flex-col justify-between"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20 group-hover:scale-105 transition-transform duration-500">
+                    <Phone className="h-5 w-5" />
+                  </span>
+                  <div className="min-w-0">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-400">
+                      WhatsApp Support
+                    </span>
+                    <p className="font-display mt-0.5 text-base sm:text-lg text-ink group-hover:text-emerald-700 transition-colors break-all">
+                      {BRAND.whatsappDisplay}
+                    </p>
+                  </div>
+                </div>
+                <span className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-2.5 text-emerald-600 group-hover:scale-105 transition-transform shrink-0">
+                  <ArrowUpRight className="h-4 w-4" />
+                </span>
+              </div>
+              <div className="mt-6 flex items-center justify-between border-t border-ink/10 pt-4 text-sm text-ink/50">
+                <span>Quick help & chat</span>
+                <span className="text-emerald-600 font-medium group-hover:underline">Chat now &rarr;</span>
+              </div>
+            </a>
+          </Reveal>
+
+          {/* Business Hours */}
+          <Reveal delay={200} className="h-full">
+            <div className="rounded-[2rem] border border-gold-400/10 bg-white p-6 shadow-soft hover:-translate-y-1 transition-all duration-500 hover:border-gold-400/20 hover:shadow-[0_0_30px_rgba(212,163,89,0.04)] h-full flex flex-col justify-between">
+              <div className="flex items-center gap-4">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gold-400/10 text-gold-600 ring-1 ring-gold-400/20">
+                  <Clock className="h-5 w-5" />
+                </span>
+                <div>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-ink/45">
+                    Support Hours
+                  </span>
+                  <p className="font-display mt-0.5 text-base text-ink">Mon – Sat, 10 AM – 7 PM IST</p>
+                </div>
+              </div>
+              <p className="mt-4 text-base sm:text-lg leading-relaxed text-ink/60 font-semibold">
+                If you message us outside these hours, we will get back to you the next morning.
+              </p>
+            </div>
+          </Reveal>
+
+          {/* Follow Us */}
+          <Reveal delay={280} className="h-full">
+            <div className="rounded-[2rem] border border-gold-400/10 bg-white p-6 shadow-soft hover:-translate-y-1 transition-all duration-500 hover:border-gold-400/20">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-ink/50 block mb-4">Follow Us</span>
+              <div className="flex items-center gap-3">
+                <a
+                  href={BRAND.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-ink/10 text-ink/60 transition-all hover:-translate-y-0.5 hover:border-gold-400 hover:text-gold-600 bg-ivory-deep"
+                >
+                  <Instagram className="h-4.5 w-4.5" />
+                </a>
+                <a
+                  href={BRAND.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook"
+                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-ink/10 text-ink/60 transition-all hover:-translate-y-0.5 hover:border-gold-400 hover:text-gold-600 bg-ivory-deep"
+                >
+                  <Facebook className="h-4.5 w-4.5" />
+                </a>
+                <a
+                  href={BRAND.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="YouTube"
+                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-ink/10 text-ink/60 transition-all hover:-translate-y-0.5 hover:border-gold-400 hover:text-gold-600 bg-ivory-deep"
+                >
+                  <Youtube className="h-4.5 w-4.5" />
+                </a>
+              </div>
+            </div>
+          </Reveal>
+
+        </div>
+
+        {/* Right Column: Contact Form */}
+        <div className="lg:col-span-7">
+          <Reveal delay={120}>
+            <ContactForm />
+          </Reveal>
+        </div>
+
+      </div>
+
+      {/* FAQ Section */}
+      <div className="mt-16 sm:mt-28 border-t border-ink/10 pt-14 sm:pt-20">
+        <Reveal className="text-center max-w-xl mx-auto mb-10 sm:mb-16">
+          <span className="text-sm font-semibold uppercase tracking-[0.25em] text-gold-600 mb-3 block">
+            FAQs
+          </span>
+          <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-semibold text-ink">
+            Frequently Asked Questions
+          </h2>
+          <div className="w-16 h-[1px] bg-gold-400/40 mx-auto mt-4" />
+        </Reveal>
+
+        <div className="mx-auto max-w-3xl space-y-4">
+          {FAQS.map((faq, idx) => {
+            const isOpen = openFaq === idx;
+            return (
+              <Reveal key={idx} delay={idx * 80}>
+                <div
+                  className="overflow-hidden rounded-[1.5rem] border border-ink/10 bg-white transition-all duration-300 hover:border-gold-400/30"
+                >
+                  <button
+                    onClick={() => setOpenFaq(isOpen ? null : idx)}
+                    className="flex w-full items-center justify-between p-6 text-left transition-colors hover:bg-ivory-deep"
+                  >
+                    <span className="font-display text-base sm:text-lg text-ink font-medium pr-4">{faq.q}</span>
+                    <ChevronDown
+                      className={`h-4.5 w-4.5 shrink-0 text-gold-600 transition-transform duration-300 ${
+                        isOpen ? "rotate-180 text-gold-700" : ""
+                      }`}
+                    />
+                  </button>
+                  {isOpen && (
+                    <div className="px-6 pb-6 pt-0 text-base sm:text-lg leading-relaxed text-ink/60 font-semibold border-t border-ink/10 pt-4 animate-fadeUp">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+      </div>
+
+    </div>
+  );
+}
