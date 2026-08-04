@@ -3,11 +3,18 @@ import { ArrowLeft } from "lucide-react";
 import ProductForm from "../_components/ProductForm";
 import { getAllCategoriesAdmin } from "@/actions/admin/categories";
 import { getAllFabricsAdmin } from "@/actions/admin/products";
+import { getAllGarmentTypesAdmin } from "@/actions/admin/garmentTypes";
+import { getAllExtraWorkAdmin } from "@/actions/admin/extraWork";
 
 export const metadata = { title: "New Product" };
 
 export default async function NewProductPage() {
-  const [categories, fabricOptions] = await Promise.all([getAllCategoriesAdmin(), getAllFabricsAdmin()]);
+  const [categories, fabricOptions, garmentTypes, extraWorkOptions] = await Promise.all([
+    getAllCategoriesAdmin(),
+    getAllFabricsAdmin(),
+    getAllGarmentTypesAdmin(),
+    getAllExtraWorkAdmin(),
+  ]);
   return (
     <div>
       <Link
@@ -22,7 +29,7 @@ export default async function NewProductPage() {
         </h1>
         <p className="text-sm text-ink/50 font-light mt-1">Add a new product to your store.</p>
       </div>
-      <ProductForm categories={categories} fabricOptions={fabricOptions} />
+      <ProductForm categories={categories} fabricOptions={fabricOptions} garmentTypes={garmentTypes} extraWorkOptions={extraWorkOptions} />
     </div>
   );
 }

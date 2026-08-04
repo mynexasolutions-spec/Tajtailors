@@ -83,7 +83,7 @@ export default function ProductGallery({ images, name }) {
               className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl border transition-all duration-300 ${
                 active === i
                   ? "border-gold-400 ring-2 ring-gold-400/25 scale-95 shadow-[0_0_20px_rgba(212,163,89,0.2)] bg-gold-400/5"
-                  : "border-ink/10 bg-ivory-deep opacity-70 hover:opacity-100 hover:border-gold-400/30 hover:-translate-y-0.5"
+                  : "border-ink/10 bg-white opacity-70 hover:opacity-100 hover:border-gold-400/30 hover:-translate-y-0.5"
               }`}
             >
               {img.image_url && (
@@ -107,7 +107,7 @@ export default function ProductGallery({ images, name }) {
               type="button"
               onClick={() => setLightboxOpen(false)}
               aria-label="Close"
-              className="group absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-full border border-gold-400/30 bg-white/15 text-white backdrop-blur-sm transition-all hover:border-gold-400/50 hover:text-gold-300"
+              className="group absolute right-5 top-5 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-gold-400/30 bg-white/15 text-white backdrop-blur-sm transition-all hover:border-gold-400/50 hover:text-gold-300"
             >
               <X className="h-5 w-5 transition-transform duration-300 group-hover:rotate-90" />
             </button>

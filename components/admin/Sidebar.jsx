@@ -7,6 +7,8 @@ import {
   LayoutDashboard,
   FolderTree,
   Package,
+  Shirt,
+  Sparkles,
   ShoppingCart,
   Users,
   Star,
@@ -35,6 +37,8 @@ const NAV_GROUPS = [
     items: [
       { label: "Categories", href: "/admin/categories", icon: FolderTree },
       { label: "Products", href: "/admin/products", icon: Package },
+      { label: "Garment Types", href: "/admin/garment-types", icon: Shirt },
+      { label: "Extra Work", href: "/admin/extra-work", icon: Sparkles },
     ],
   },
   {
@@ -87,8 +91,8 @@ export default function AdminSidebar({ adminName = "Admin", badges = {} }) {
 
         <div className="relative flex h-16 shrink-0 items-center gap-3 border-b border-gold-400/15 px-5">
           <div className="pointer-events-none absolute -left-10 -top-10 h-28 w-28 rounded-full bg-gold-400/10 blur-3xl" />
-          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gold-400/20 bg-gradient-to-tr from-gold-500/10 to-gold-400/20 p-1.5 shadow-[0_0_15px_rgba(212,163,89,0.15)]">
-            <Image src="/logo.png" alt="Taj Tailor" width={20} height={20} className="h-5 w-5 object-contain" />
+          <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-gold-400/20 bg-gradient-to-tr from-gold-500/10 to-gold-400/20 p-1 shadow-[0_0_15px_rgba(212,163,89,0.15)]">
+            <Image src="/logo.png" alt="Taj Tailor" width={80} height={40} className="h-full w-full object-contain" />
           </div>
           <div className="relative flex-1 overflow-hidden">
             <p className="truncate text-sm font-semibold tracking-wider text-ink">Taj Tailor</p>

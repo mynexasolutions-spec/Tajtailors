@@ -16,10 +16,10 @@ export default function AdminHeader({ adminName }) {
       </button>
 
       <div className="hidden lg:block">
-        <p className="text-lg text-ink font-light">
-          Welcome back, <span className="font-semibold text-gold-700">{adminName || "Admin"}</span>
+        <p className="text-lg text-ink font-bold">
+          Welcome back, <span className="font-bold text-gold-700">{adminName || "Admin"}</span>
         </p>
-        <p className="text-sm text-ink/40 font-light tracking-wide mt-0.5">Here&apos;s what&apos;s happening with your store today.</p>
+        <p className="text-sm text-ink/40 font-semibold tracking-wide mt-0.5">Here&apos;s what&apos;s happening with your store today.</p>
       </div>
 
       <div className="flex items-center gap-3 md:gap-5">

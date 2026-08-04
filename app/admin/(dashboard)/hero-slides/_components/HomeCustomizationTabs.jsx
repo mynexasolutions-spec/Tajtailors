@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { GalleryHorizontal, Sparkles, Layers, Route, Shirt, ShoppingBag, ShieldCheck, Star } from "lucide-react";
+import { GalleryHorizontal, Sparkles, Layers, Route, Shirt, ShoppingBag, ShieldCheck, Star, MessageSquareHeart } from "lucide-react";
 import HeroSlideManager from "./HeroSlideManager";
 import HomeSectionsManager from "./HomeSectionsManager";
 
@@ -13,6 +13,7 @@ const TABS = [
   { id: "fabrics", label: "Premium Fabrics", icon: Shirt, sections: ["fabrics"] },
   { id: "kurtas", label: "Kurta Collection", icon: ShoppingBag, sections: ["kurtas"] },
   { id: "spotlight", label: "Featured Spotlight", icon: Star, sections: ["spotlight"] },
+  { id: "testimonials", label: "Testimonials", icon: MessageSquareHeart, sections: ["testimonials"] },
   { id: "trustbar", label: "Trust Bar", icon: ShieldCheck, sections: ["trustbar"] },
 ];
 

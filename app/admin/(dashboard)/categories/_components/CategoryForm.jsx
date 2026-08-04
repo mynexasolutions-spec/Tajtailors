@@ -9,6 +9,8 @@ const inputClass =
   "w-full rounded-2xl border border-ink/10 bg-ivory-deep px-5 py-3.5 text-sm text-ink placeholder:text-ink/30 transition-all duration-500 focus:border-gold-400/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/30";
 const labelClass = "mb-2 block text-xs font-semibold uppercase tracking-widest text-gold-600/90";
 
+const VARIANT_LABEL_OPTIONS = ["Size", "Color"];
+
 function slugPreview(text) {
   return (text || "")
     .toLowerCase()
@@ -24,6 +26,7 @@ export default function CategoryForm({ category }) {
   const [imageUrl, setImageUrl] = useState(category?.image_url || null);
   const [name, setName] = useState(category?.name || "");
   const [isActive, setIsActive] = useState(category?.is_active ?? true);
+  const [variantLabel, setVariantLabel] = useState(category?.variant_label || "Size");
 
   return (
     <form
@@ -33,6 +36,7 @@ export default function CategoryForm({ category }) {
       {isEditing && <input type="hidden" name="id" value={category.id} />}
       <input type="hidden" name="image_url" value={imageUrl || ""} />
       <input type="hidden" name="is_active" value={isActive ? "on" : "off"} />
+      <input type="hidden" name="variant_label" value={variantLabel} />
 
       {state.error && (
         <div className="flex items-center gap-2 rounded-2xl border border-red-500/25 bg-red-500/10 p-4 text-sm text-red-300 animate-fadeUp">
@@ -74,6 +78,29 @@ export default function CategoryForm({ category }) {
               placeholder="A short line about this collection…"
               className={inputClass}
             />
+          </div>
+
+          <div>
+            <label className={labelClass}>Variant Type</label>
+            <div className="flex gap-3">
+              {VARIANT_LABEL_OPTIONS.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setVariantLabel(option)}
+                  className={`flex-1 rounded-2xl border px-5 py-3.5 text-sm font-semibold transition-all duration-300 ${
+                    variantLabel === option
+                      ? "border-gold-400/50 bg-gold-400/10 text-gold-700"
+                      : "border-ink/10 bg-ivory-deep text-ink/45 hover:border-gold-400/30"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-sm text-ink/35">
+              What products in this category call their variants — "Size" for kurtas, "Color" for fabrics. Shown on the product form and shop page.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

@@ -1,13 +1,17 @@
 import Link from "next/link";
 import { Plus, Package, CheckCircle2, PackageX, AlertTriangle } from "lucide-react";
 import { getAllProductsAdmin } from "@/actions/admin/products";
+import { getAllCategoriesAdmin } from "@/actions/admin/categories";
 import ProductRow from "./_components/ProductRow";
 import ProductCard from "./_components/ProductCard";
 
 export const metadata = { title: "Products" };
+export const dynamic = "force-dynamic";
 
-export default async function AdminProductsPage() {
-  const products = await getAllProductsAdmin();
+export default async function AdminProductsPage({ searchParams }) {
+  const { category: categoryId } = await searchParams;
+  const [allProducts, categories] = await Promise.all([getAllProductsAdmin(), getAllCategoriesAdmin()]);
+  const products = categoryId ? allProducts.filter((p) => p.category_id === categoryId) : allProducts;
 
   const activeCount = products.filter((p) => p.is_active).length;
   const outOfStockCount = products.filter((p) => p.totalStock === 0).length;
@@ -58,10 +62,35 @@ export default async function AdminProductsPage() {
         ))}
       </div>
 
+      {/* Category Filter */}
+      <div className="mb-6 flex flex-wrap gap-2">
+        <Link
+          href="/admin/products"
+          className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition-all duration-300 ${
+            !categoryId ? "border-gold-400/50 bg-gold-400/10 text-gold-700" : "border-ink/10 bg-white text-ink/50 hover:border-gold-400/30"
+          }`}
+        >
+          All ({allProducts.length})
+        </Link>
+        {categories.map((c) => (
+          <Link
+            key={c.id}
+            href={`/admin/products?category=${c.id}`}
+            className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition-all duration-300 ${
+              categoryId === c.id ? "border-gold-400/50 bg-gold-400/10 text-gold-700" : "border-ink/10 bg-white text-ink/50 hover:border-gold-400/30"
+            }`}
+          >
+            {c.name} ({c.product_count})
+          </Link>
+        ))}
+      </div>
+
       {/* Table (sm and up) */}
       <div className="hidden overflow-x-auto rounded-[2rem] border border-gold-400/10 bg-white p-6 backdrop-blur-md shadow-2xl sm:block md:p-8">
         {products.length === 0 ? (
-          <p className="py-12 text-center text-sm text-ink/45">No products yet — create your first one.</p>
+          <p className="py-12 text-center text-sm text-ink/45">
+            {categoryId ? "No products in this category yet." : "No products yet — create your first one."}
+          </p>
         ) : (
           <table className="w-full min-w-[680px] text-left border-collapse">
             <thead>
@@ -86,7 +115,9 @@ export default async function AdminProductsPage() {
       {/* Card List (mobile only) */}
       <div className="rounded-[2rem] border border-gold-400/10 bg-white p-4 backdrop-blur-md shadow-2xl sm:hidden">
         {products.length === 0 ? (
-          <p className="py-12 text-center text-sm text-ink/45">No products yet — create your first one.</p>
+          <p className="py-12 text-center text-sm text-ink/45">
+            {categoryId ? "No products in this category yet." : "No products yet — create your first one."}
+          </p>
         ) : (
           <ul className="space-y-3">
             {products.map((p) => (

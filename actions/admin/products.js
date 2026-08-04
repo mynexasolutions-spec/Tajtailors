@@ -17,7 +17,7 @@ export async function getAllProductsAdmin() {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("products")
-    .select("id, name, slug, is_active, is_featured, featured_image_url, categories ( name ), product_variants ( price, stock_quantity )")
+    .select("id, name, slug, product_code, category_id, is_active, is_featured, featured_image_url, categories ( name ), product_variants ( price, stock_quantity )")
     .order("created_at", { ascending: false });
 
   return (data || []).map((p) => ({
@@ -42,11 +42,12 @@ export async function getProductForEdit(id) {
     .maybeSingle();
 
   if (data?.product_type === "outfit") {
-    const { data: links } = await supabase
-      .from("product_fabric_links")
-      .select("fabric_product_id")
-      .eq("outfit_product_id", id);
-    data.fabricLinkIds = (links || []).map((l) => l.fabric_product_id);
+    const [{ data: fabricLinks }, { data: extraWorkLinks }] = await Promise.all([
+      supabase.from("product_fabric_links").select("fabric_product_id").eq("outfit_product_id", id),
+      supabase.from("product_extra_work_links").select("extra_work_option_id").eq("product_id", id),
+    ]);
+    data.fabricLinkIds = (fabricLinks || []).map((l) => l.fabric_product_id);
+    data.extraWorkLinkIds = (extraWorkLinks || []).map((l) => l.extra_work_option_id);
   }
 
   return data;
@@ -68,6 +69,15 @@ async function syncFabricLinks(supabase, outfitProductId, fabricIds) {
   if (fabricIds?.length) {
     await supabase.from("product_fabric_links").insert(
       fabricIds.map((fabricId) => ({ outfit_product_id: outfitProductId, fabric_product_id: fabricId }))
+    );
+  }
+}
+
+async function syncExtraWorkLinks(supabase, productId, extraWorkIds) {
+  await supabase.from("product_extra_work_links").delete().eq("product_id", productId);
+  if (extraWorkIds?.length) {
+    await supabase.from("product_extra_work_links").insert(
+      extraWorkIds.map((extraWorkOptionId) => ({ product_id: productId, extra_work_option_id: extraWorkOptionId }))
     );
   }
 }
@@ -112,12 +122,15 @@ function parseProductFields(formData) {
   const fabricMeters = formData.get("fabric_meters_required");
   return {
     name: formData.get("name"),
+    product_code: formData.get("product_code") || null,
     category_id: formData.get("category_id") || null,
     short_description: formData.get("short_description") || null,
     description: formData.get("description") || null,
     product_type: formData.get("product_type") || "kurta",
     fabric_type: formData.get("fabric_type") || null,
+    fabric_type_description: formData.get("fabric_type_description") || null,
     color: formData.get("color") || null,
+    color_description: formData.get("color_description") || null,
     fabric_meters_required: fabricMeters ? Number(fabricMeters) : null,
     garment_type: formData.get("garment_type") || null,
     badge: formData.get("badge") || null,
@@ -161,6 +174,7 @@ export async function createProduct(_prevState, formData) {
   });
   if (fields.product_type === "outfit") {
     await syncFabricLinks(supabase, product.id, parseJsonField(formData, "fabric_links"));
+    await syncExtraWorkLinks(supabase, product.id, parseJsonField(formData, "extra_work_links"));
   }
 
   revalidatePath("/admin/products");
@@ -192,6 +206,7 @@ export async function updateProduct(_prevState, formData) {
   });
   if (fields.product_type === "outfit") {
     await syncFabricLinks(supabase, id, parseJsonField(formData, "fabric_links"));
+    await syncExtraWorkLinks(supabase, id, parseJsonField(formData, "extra_work_links"));
   }
 
   revalidatePath("/admin/products");

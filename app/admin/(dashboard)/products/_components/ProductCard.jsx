@@ -40,7 +40,10 @@ export default function ProductCard({ product }) {
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium text-ink">{product.name}</p>
-          <p className="truncate text-sm text-ink/40">{product.categoryName || "No category"}</p>
+          <p className="truncate text-sm text-ink/40">
+            {product.categoryName || "No category"}
+            {product.product_code && <span className="font-mono text-ink/35"> · {product.product_code}</span>}
+          </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <Link

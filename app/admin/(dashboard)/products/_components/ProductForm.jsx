@@ -16,8 +16,6 @@ const PRODUCT_TYPES = [
   { value: "outfit", label: "Outfit (stitching service)" },
 ];
 
-const VARIANT_LABELS = { fabric: "Color", kurta: "Size", outfit: "Variant" };
-
 const inputClass =
   "w-full rounded-2xl border border-ink/10 bg-ivory-deep px-5 py-3.5 text-sm text-ink placeholder:text-ink/30 transition-all duration-500 focus:border-gold-400/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/30";
 const labelClass = "mb-2 block text-xs font-semibold uppercase tracking-widest text-gold-600/90";
@@ -25,17 +23,23 @@ const panelClass =
   "relative rounded-[2.5rem] border border-gold-400/20 bg-white p-6 sm:p-8 space-y-5 shadow-xl";
 
 
-export default function ProductForm({ product, categories, fabricOptions = [] }) {
+export default function ProductForm({ product, categories, fabricOptions = [], garmentTypes = [], extraWorkOptions = [] }) {
   const isEditing = !!product;
   const action = isEditing ? updateProduct : createProduct;
   const [state, formAction, pending] = useActionState(action, {});
   const [isActive, setIsActive] = useState(product?.is_active ?? true);
   const [isFeatured, setIsFeatured] = useState(product?.is_featured ?? false);
   const [productType, setProductType] = useState(product?.product_type || "fabric");
+  const [categoryId, setCategoryId] = useState(product?.category_id || "");
+  const variantLabel = categories.find((c) => c.id === categoryId)?.variant_label || "Variant";
   const [fabricLinkIds, setFabricLinkIds] = useState(product?.fabricLinkIds || []);
+  const [extraWorkLinkIds, setExtraWorkLinkIds] = useState(product?.extraWorkLinkIds || []);
 
   const toggleFabricLink = (id) => {
     setFabricLinkIds((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]));
+  };
+  const toggleExtraWorkLink = (id) => {
+    setExtraWorkLinkIds((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]));
   };
 
   const [featuredImage, setFeaturedImage] = useState(product?.featured_image_url || null);
@@ -70,6 +74,7 @@ export default function ProductForm({ product, categories, fabricOptions = [] })
       <input type="hidden" name="variants" value={JSON.stringify(variants)} />
       <input type="hidden" name="faqs" value={JSON.stringify(faqs)} />
       <input type="hidden" name="fabric_links" value={JSON.stringify(fabricLinkIds)} />
+      <input type="hidden" name="extra_work_links" value={JSON.stringify(extraWorkLinkIds)} />
       <input type="hidden" name="is_active" value={isActive ? "on" : "off"} />
       <input type="hidden" name="is_featured" value={isFeatured ? "on" : "off"} />
 
@@ -90,8 +95,23 @@ export default function ProductForm({ product, categories, fabricOptions = [] })
                 <input required name="name" defaultValue={product?.name} placeholder="e.g. Egyptian Cotton" className={inputClass} />
               </div>
               <div>
+                <label className={labelClass}>Product Code</label>
+                <input
+                  name="product_code"
+                  defaultValue={product?.product_code || ""}
+                  placeholder="e.g. FAB-0231"
+                  className={inputClass}
+                />
+                <p className="mt-1.5 text-xs text-ink/40">For your own reference — not shown to customers.</p>
+              </div>
+              <div>
                 <label className={labelClass}>Category</label>
-                <select name="category_id" defaultValue={product?.category_id || ""} className={inputClass}>
+                <select
+                  name="category_id"
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className={inputClass}
+                >
                   <option value="">Select a category</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>{c.name}</option>
@@ -124,6 +144,32 @@ export default function ProductForm({ product, categories, fabricOptions = [] })
                 </div>
               )}
 
+              {productType === "fabric" && (
+                <div className="sm:col-span-2">
+                  <label className={labelClass}>Fabric Type Description</label>
+                  <input
+                    name="fabric_type_description"
+                    defaultValue={product?.fabric_type_description}
+                    placeholder="e.g. Premium quality fabric, handpicked for comfort and a flawless drape"
+                    className={inputClass}
+                  />
+                  <p className="mt-1.5 text-xs text-ink/40">Shown under "Fabric Type" in the product details card on the shop page.</p>
+                </div>
+              )}
+
+              {productType === "kurta" && (
+                <div className="sm:col-span-2">
+                  <label className={labelClass}>Color Description</label>
+                  <input
+                    name="color_description"
+                    defaultValue={product?.color_description}
+                    placeholder="e.g. Signature shade, dyed to stay rich wash after wash"
+                    className={inputClass}
+                  />
+                  <p className="mt-1.5 text-xs text-ink/40">Shown under "Color" in the product details card on the shop page.</p>
+                </div>
+              )}
+
               {productType === "outfit" && (
                 <div>
                   <label className={labelClass}>Fabric Needed (meters)</label>
@@ -143,13 +189,14 @@ export default function ProductForm({ product, categories, fabricOptions = [] })
                   <label className={labelClass}>Garment Type</label>
                   <select name="garment_type" defaultValue={product?.garment_type || ""} className={inputClass}>
                     <option value="">Select garment type</option>
-                    <option value="kurta">Kurta</option>
-                    <option value="pajama">Pajama</option>
-                    <option value="pant">Pant</option>
-                    <option value="kurta_pajama_set">Kurta + Pajama Set</option>
-                    <option value="kurta_pant_set">Kurta + Pant Set</option>
+                    {garmentTypes.map((g) => (
+                      <option key={g.key} value={g.key}>{g.label}</option>
+                    ))}
                   </select>
-                  <p className="mt-1.5 text-xs text-ink/40">Determines which measurement fields customers fill in on the product page.</p>
+                  <p className="mt-1.5 text-xs text-ink/40">
+                    Determines which measurement fields customers fill in, and groups this product with others of the same type.{" "}
+                    <Link href="/admin/garment-types" className="text-gold-600 hover:underline">Manage garment types</Link>
+                  </p>
                 </div>
               )}
             </div>
@@ -189,14 +236,44 @@ export default function ProductForm({ product, categories, fabricOptions = [] })
             </div>
           )}
 
+          {productType === "outfit" && (
+            <div className={panelClass}>
+              <h2 className="font-display text-base text-ink">Extra Work</h2>
+              <p className="text-sm text-ink/45">
+                Pick which extra work add-ons customers can choose for this outfit.{" "}
+                <Link href="/admin/extra-work" className="text-gold-600 hover:underline">Manage extra work options</Link>
+              </p>
+              {extraWorkOptions.length === 0 ? (
+                <p className="text-sm text-ink/45">No extra work options yet — add some first, then come back to map them here.</p>
+              ) : (
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {extraWorkOptions.map((o) => (
+                    <label
+                      key={o.id}
+                      className={`flex items-center justify-between gap-2.5 rounded-xl border px-4 py-2.5 text-sm transition-colors ${
+                        extraWorkLinkIds.includes(o.id) ? "border-gold-400/40 bg-gold-400/10 text-gold-700" : "border-ink/10 bg-ivory-deep text-ink/60"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <input type="checkbox" checked={extraWorkLinkIds.includes(o.id)} onChange={() => toggleExtraWorkLink(o.id)} />
+                        {o.label}
+                      </span>
+                      {o.price > 0 && <span className="text-xs font-semibold text-gold-600">+₹{o.price}</span>}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <div id="variants-section" className={panelClass}>
-            <h2 className="font-display text-base text-ink">{VARIANT_LABELS[productType]}s &amp; Pricing</h2>
+            <h2 className="font-display text-base text-ink">{variantLabel}s &amp; Pricing</h2>
             {productType === "fabric" && (
               <p className="text-sm text-ink/45 -mt-3">
                 Add one variant per color this fabric comes in (e.g. "Red", "Navy Blue") — each can have its own price and stock (in meters).
               </p>
             )}
-            <VariantsEditor variants={variants} onChange={setVariants} showErrors={showVariantErrors} label={VARIANT_LABELS[productType]} />
+            <VariantsEditor variants={variants} onChange={setVariants} showErrors={showVariantErrors} label={variantLabel} />
           </div>
 
           <div className={panelClass}>

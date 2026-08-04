@@ -43,12 +43,7 @@ export default function ThreeWays({ heading, cards }) {
   }));
 
   return (
-    <section className="relative z-10 overflow-hidden bg-ivory pt-[7vh]">
-      {/* Ambient gold glows for depth, now that the flat background image is gone */}
-      <div className="pointer-events-none absolute inset-0 opacity-60">
-        <div className="absolute -left-32 top-0 h-[420px] w-[420px] rounded-full bg-gold-300/10 blur-[120px]" />
-        <div className="absolute -right-24 bottom-0 h-[380px] w-[380px] rounded-full bg-gold-500/10 blur-[130px]" />
-      </div>
+    <section className="relative z-10 overflow-hidden bg-white pt-[7vh]">
 
       <Reveal className="relative mx-auto max-w-wrap px-4 pb-16 pt-6 sm:px-6 sm:pb-24 sm:pt-10 md:px-12">
         <div className="mb-10 flex flex-col items-center text-center sm:mb-16">
@@ -67,9 +62,9 @@ export default function ThreeWays({ heading, cards }) {
         <div className="grid grid-cols-1 gap-14 sm:grid-cols-3 sm:gap-6">
           {WAYS.map((way, i) => (
             <Reveal key={way.title} delay={i * 130} className="relative">
-              <div className="group relative flex h-full items-center overflow-hidden rounded-2xl border border-ink/10 bg-white/80 backdrop-blur-sm shadow-soft transition-all duration-500 hover:-translate-y-2.5 hover:scale-[1.015] hover:border-gold-500/50 hover:shadow-[0_30px_70px_-25px_rgba(202,161,75,0.45)]">
-                {/* Top accent line, fills in on hover */}
-                <span className="absolute inset-x-0 top-0 z-10 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-gold-300 via-gold-500 to-gold-300 transition-transform duration-500 group-hover:scale-x-100" />
+              <div className="group relative flex h-full items-center overflow-hidden rounded-2xl border border-gold-400/15 bg-white shadow-soft transition-all duration-500 hover:-translate-y-2.5 hover:scale-[1.015] hover:border-gold-500/50 hover:shadow-lg">
+                {/* Top accent line, always visible, glows on hover */}
+                <span className="absolute inset-x-0 top-0 z-10 h-[3px] bg-gold-gradient opacity-60 transition-opacity duration-300 group-hover:opacity-100" />
 
                 <div className="relative min-w-0 flex-1 p-5 sm:p-6">
                   <div className="flex items-center gap-3">
@@ -78,10 +73,10 @@ export default function ThreeWays({ heading, cards }) {
                     </span>
                     <h3 className="font-display text-base font-bold uppercase tracking-wide text-ink sm:text-lg">{way.title}</h3>
                   </div>
-                  <p className="mt-3 text-base font-semibold leading-relaxed text-ink/60">{way.desc}</p>
+                  <p className="mt-3 text-base font-semibold leading-relaxed text-ink/75">{way.desc}</p>
                   <Link
                     href={way.href}
-                    className="group/btn mt-6 inline-flex w-fit items-center gap-1.5 rounded-full bg-ink px-5 py-3 text-sm font-bold uppercase tracking-widest text-ivory shadow-[0_8px_20px_-8px_rgba(18,16,14,0.5)] transition-all duration-300 hover:bg-gold-600 hover:shadow-gold"
+                    className="group/btn mt-6 inline-flex w-fit items-center gap-1.5 rounded-full bg-ink px-5 py-3.5 text-xs font-bold uppercase tracking-[0.2em] text-white transition-all duration-300 hover:bg-gold-600 hover:shadow-gold hover:-translate-y-0.5"
                   >
                     {way.button}
                     <ChevronRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover/btn:translate-x-1.5" />
@@ -89,7 +84,7 @@ export default function ThreeWays({ heading, cards }) {
                 </div>
 
                 <div
-                  className={`relative overflow-hidden ${way.width || "w-[36%] sm:w-[34%]"} shrink-0 transition-transform duration-500 group-hover:-translate-y-1`}
+                  className={`relative overflow-hidden ${way.width || "w-[36%] sm:w-[34%]" } shrink-0 transition-transform duration-500 group-hover:-translate-y-1`}
                   style={{ aspectRatio: way.ratio }}
                 >
                   <Image
@@ -105,7 +100,7 @@ export default function ThreeWays({ heading, cards }) {
 
               {/* Step connector, desktop only */}
               {i < WAYS.length - 1 && (
-                <span className="pointer-events-none absolute right-0 top-1/2 z-20 hidden h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-gold-400/30 bg-ivory text-gold-500 sm:flex">
+                <span className="pointer-events-none absolute right-0 top-1/2 z-20 hidden h-8 w-8 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full border border-gold-400/20 bg-white text-gold-500 shadow-soft sm:flex">
                   <ChevronRight className="h-4 w-4" />
                 </span>
               )}

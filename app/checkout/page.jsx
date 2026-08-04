@@ -22,13 +22,7 @@ export default async function CheckoutPage() {
   return (
     <>
       <SiteHeader />
-      <main className="relative min-h-screen overflow-hidden bg-ivory pb-28 pt-20">
-        {/* Decorative background glows */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-[5%] left-[-10%] w-[500px] h-[500px] rounded-full bg-gold-500/10 blur-[120px]" />
-          <div className="absolute top-[35%] right-[-10%] w-[600px] h-[600px] rounded-full bg-gold-400/10 blur-[150px]" />
-          <div className="absolute bottom-[10%] left-[20%] w-[500px] h-[500px] rounded-full bg-gold-600/10 blur-[130px]" />
-        </div>
+      <main className="relative min-h-screen overflow-hidden bg-white pb-28 pt-20">
 
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <Reveal className="mb-12 border-b border-gold-400/15 pb-8 text-center sm:text-left">
@@ -42,7 +36,7 @@ export default async function CheckoutPage() {
                 Checkout
               </span>
             </h1>
-            <p className="mt-4 text-base sm:text-lg text-ink/60 font-light max-w-xl mx-auto sm:mx-0">
+            <p className="mt-4 text-base sm:text-lg text-ink/70 font-semibold max-w-xl mx-auto sm:mx-0">
               Complete your details below to place your order — we'll confirm everything with you on WhatsApp.
             </p>
           </Reveal>

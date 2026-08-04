@@ -45,9 +45,14 @@ export default function ProductRow({ product }) {
               />
             )}
           </div>
-          <span className="text-sm font-medium text-ink group-hover/row:text-gold-700 transition-colors duration-300">
-            {product.name}
-          </span>
+          <div className="min-w-0">
+            <span className="block text-sm font-medium text-ink group-hover/row:text-gold-700 transition-colors duration-300">
+              {product.name}
+            </span>
+            {product.product_code && (
+              <span className="font-mono text-xs text-ink/40">{product.product_code}</span>
+            )}
+          </div>
         </div>
       </td>
       <td className="py-4 pr-4 text-sm text-ink/50">{product.categoryName || "—"}</td>

@@ -95,6 +95,17 @@ const SECTIONS = [
     noteHref: "/admin/products",
   },
   {
+    id: "testimonials",
+    title: "Testimonials",
+    enabledKey: "home_testimonials_enabled",
+    fields: [
+      { key: "home_testimonials_eyebrow", label: "Small Label" },
+      { key: "home_testimonials_heading", label: "Heading" },
+    ],
+    note: "Manage the actual testimonials shown here (and on the About page) on the Testimonials page.",
+    noteHref: "/admin/testimonials",
+  },
+  {
     id: "trustbar",
     title: "Trust Bar",
     enabledKey: "home_trustbar_enabled",

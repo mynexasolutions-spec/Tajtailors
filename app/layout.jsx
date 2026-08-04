@@ -2,6 +2,7 @@ import { Plus_Jakarta_Sans, Jost } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { ToastProvider } from "@/context/ToastContext";
+import { WishlistProvider } from "@/context/WishlistContext";
 import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import CartDrawer from "@/components/CartDrawer";
 import { BRAND } from "@/lib/constants";
@@ -42,11 +43,13 @@ export default async function RootLayout({ children }) {
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body>
         <ToastProvider>
-          <CartProvider>
-            {children}
-            <CartDrawer quantityDiscount={quantityDiscount} />
-            <FloatingWhatsApp />
-          </CartProvider>
+          <WishlistProvider>
+            <CartProvider>
+              {children}
+              <CartDrawer quantityDiscount={quantityDiscount} />
+              <FloatingWhatsApp />
+            </CartProvider>
+          </WishlistProvider>
         </ToastProvider>
       </body>
     </html>

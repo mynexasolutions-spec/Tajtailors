@@ -3,16 +3,20 @@ import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getProductForEdit, getAllFabricsAdmin } from "@/actions/admin/products";
 import { getAllCategoriesAdmin } from "@/actions/admin/categories";
+import { getAllGarmentTypesAdmin } from "@/actions/admin/garmentTypes";
+import { getAllExtraWorkAdmin } from "@/actions/admin/extraWork";
 import ProductForm from "../../_components/ProductForm";
 
 export const metadata = { title: "Edit Product" };
 
 export default async function EditProductPage({ params }) {
   const { id } = await params;
-  const [product, categories, fabricOptions] = await Promise.all([
+  const [product, categories, fabricOptions, garmentTypes, extraWorkOptions] = await Promise.all([
     getProductForEdit(id),
     getAllCategoriesAdmin(),
     getAllFabricsAdmin(),
+    getAllGarmentTypesAdmin(),
+    getAllExtraWorkAdmin(),
   ]);
   if (!product) notFound();
 
@@ -30,7 +34,7 @@ export default async function EditProductPage({ params }) {
         </h1>
         <p className="text-sm text-ink/50 font-light mt-1">Edit product details, price, and images.</p>
       </div>
-      <ProductForm product={product} categories={categories} fabricOptions={fabricOptions} />
+      <ProductForm product={product} categories={categories} fabricOptions={fabricOptions} garmentTypes={garmentTypes} extraWorkOptions={extraWorkOptions} />
     </div>
   );
 }

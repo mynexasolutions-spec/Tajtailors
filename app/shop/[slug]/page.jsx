@@ -1,7 +1,7 @@
 import { cache, Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronRight, ChevronDown, Sparkles, Layers, Palette } from "lucide-react";
+import { ChevronRight, ChevronDown, Sparkles, Layers, Palette, HelpCircle, MessageSquareHeart, Gift } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import ProductGrid from "@/components/ProductGrid";
@@ -11,7 +11,7 @@ import ProductPurchasePanel from "./_components/ProductPurchasePanel";
 import { ProductVariantProvider } from "./_components/ProductVariantContext";
 import ReviewForm from "./_components/ReviewForm";
 import ReviewsList from "./_components/ReviewsList";
-import { getProductBySlug, getRelatedProducts, getCompatibleOutfits, getCompatibleFabrics } from "@/actions/products";
+import { getProductBySlug, getRelatedProducts, getCompatibleOutfits, getCompatibleFabrics, getGarmentTypes, getExtraWorkOptions } from "@/actions/products";
 import Reveal from "@/components/Reveal";
 
 // Dedupes the fetch: generateMetadata and the page component both need this
@@ -36,11 +36,13 @@ export default async function ProductDetailPage({ params }) {
   const relatedProducts = await getRelatedProducts(product.category_id, product.id);
   const compatibleOutfits = product.product_type === "fabric" ? await getCompatibleOutfits(product.id) : [];
   const compatibleFabrics = product.product_type === "outfit" ? await getCompatibleFabrics(product.id) : [];
+  const garmentTypes = product.product_type === "fabric" || product.product_type === "outfit" ? await getGarmentTypes() : [];
+  const extraWorkOptions = product.product_type === "outfit" ? await getExtraWorkOptions(product.id) : [];
 
   // Fabric/kurta attributes shown as detail cards
   const notes = [
-    { label: "Fabric Type", value: product.fabric_type, icon: Layers, desc: "The material this product is made from" },
-    { label: "Color", value: product.color, icon: Palette, desc: "The color of this item" },
+    { label: "Fabric Type", value: product.fabric_type, icon: Layers, desc: product.fabric_type_description },
+    { label: "Color", value: product.color, icon: Palette, desc: product.color_description },
   ].filter((n) => n.value);
 
   // Serialize properties to strip non-serializable fields/prototypes for React 19 compatibility
@@ -48,36 +50,34 @@ export default async function ProductDetailPage({ params }) {
   const safeRelatedProducts = JSON.parse(JSON.stringify(relatedProducts));
   const safeCompatibleOutfits = JSON.parse(JSON.stringify(compatibleOutfits));
   const safeCompatibleFabrics = JSON.parse(JSON.stringify(compatibleFabrics));
+  const safeGarmentTypes = JSON.parse(JSON.stringify(garmentTypes));
+  const safeExtraWorkOptions = JSON.parse(JSON.stringify(extraWorkOptions));
 
   return (
     <>
       <SiteHeader />
-      <main className="min-h-screen bg-ivory text-ink overflow-hidden pb-16 sm:pb-24 pt-6 sm:pt-10">
-
-        {/* Ambient background glows */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-gold-500/10 blur-[120px] animate-pulse" />
-          <div className="absolute top-[40%] right-[-10%] w-[500px] h-[500px] rounded-full bg-gold-400/10 blur-[120px] animate-pulse" />
-          <div className="absolute bottom-[5%] left-[25%] w-[500px] h-[500px] rounded-full bg-gold-600/10 blur-[130px]" />
-        </div>
+      <main className="min-h-screen bg-white text-ink overflow-hidden pb-16 sm:pb-24 pt-6 sm:pt-10">
 
         <div className="mx-auto max-w-wrap px-6 md:px-12 relative z-10">
 
           {/* Breadcrumbs */}
-          <div className="mb-6 sm:mb-10 flex flex-wrap items-center gap-2 text-sm text-ink/45">
-            <Link href="/" className="hover:text-gold-600 transition-colors">Home</Link>
-            <ChevronRight className="h-3.5 w-3.5" />
-            <Link href="/shop" className="hover:text-gold-600 transition-colors">Shop</Link>
+          <div className="mb-6 sm:mb-10 flex flex-wrap items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ink/40 w-fit max-w-full">
+            <Link href="/" className="transition-colors hover:text-gold-600">Home</Link>
+            <ChevronRight className="h-3 w-3 shrink-0 text-ink/20" />
+            <Link href="/shop" className="transition-colors hover:text-gold-600">Shop</Link>
             {product.categoryName && (
               <>
-                <ChevronRight className="h-3.5 w-3.5" />
-                <Link href={`/shop?category=${product.category_id}`} className="hover:text-gold-600 transition-colors">
+                <ChevronRight className="h-3 w-3 shrink-0 text-ink/20" />
+                <Link
+                  href={`/shop?category=${product.category_id}`}
+                  className="transition-colors hover:text-gold-600"
+                >
                   {product.categoryName}
                 </Link>
               </>
             )}
-            <ChevronRight className="h-3.5 w-3.5" />
-            <span className="text-ink/60 font-medium">{product.name}</span>
+            <ChevronRight className="h-3 w-3 shrink-0 text-ink/20" />
+            <span className="truncate text-ink">{product.name}</span>
           </div>
 
           <div className="grid grid-cols-1 gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 lg:items-start">
@@ -86,34 +86,73 @@ export default async function ProductDetailPage({ params }) {
             {/* Gallery Panel — sticks in place while purchase details scroll on desktop */}
             <Reveal className="lg:sticky lg:top-[104px] lg:self-start">
               <ProductGallery images={safeProduct.images} name={safeProduct.name} />
+              {product.short_description && (
+                <p className="mt-5 text-base sm:text-lg leading-relaxed text-ink/70 font-semibold">{product.short_description}</p>
+              )}
+
+              {/* Product Details */}
+              {notes.length > 0 && (
+                <div className="mt-6">
+                  <div className="relative flex flex-col divide-y divide-ink/10 overflow-hidden rounded-2xl border border-gold-400/15 bg-white shadow-soft sm:flex-row sm:divide-x sm:divide-y-0">
+                    {notes.map((n) => {
+                      const NoteIcon = n.icon;
+                      return (
+                        <div key={n.label} className="group relative flex flex-1 items-start gap-4 p-5 sm:p-6 transition-colors duration-300 hover:bg-gold-50/10">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gold-400/20 bg-white text-gold-600 shadow-[0_0_15px_rgba(212,163,89,0.05)] transition-all duration-300 group-hover:scale-110 group-hover:border-gold-400/50 group-hover:text-gold-700">
+                            <NoteIcon className="w-5 h-5" strokeWidth={1.5} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-gold-600">
+                              {n.label}
+                            </p>
+                            <p className="mt-1 text-xl sm:text-2xl text-ink font-bold leading-snug">
+                              {n.value}
+                            </p>
+                            {n.desc && (
+                              <p className="text-sm sm:text-base text-ink/60 font-semibold mt-1.5 leading-relaxed">
+                                {n.desc}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </Reveal>
 
             {/* Purchase Options */}
             <Reveal delay={100} className="flex flex-col">
-              {product.product_type && (
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold-400/25 bg-white text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-700 shadow-soft mb-4 w-fit">
-                  <Sparkles className="w-3.5 h-3.5 text-gold-600 animate-pulse" />
-                  {product.product_type === "fabric" ? "Fabric" : product.product_type === "outfit" ? "Outfit — Custom Stitching" : "Ready-Made Kurta"}
-                </span>
-              )}
+              <div className="space-y-5">
+                {product.product_type && (
+                  <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold-400/25 bg-white text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-700 shadow-soft w-fit">
+                    <Sparkles className="w-3.5 h-3.5 text-gold-600 animate-pulse" />
+                    {product.product_type === "fabric" ? "Fabric" : product.product_type === "outfit" ? "Outfit — Custom Stitching" : "Ready-Made Kurta"}
+                  </span>
+                )}
 
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-light text-ink leading-[1.08]">
-                {product.name}
-              </h1>
-              <div className="mt-5 h-px w-16 bg-gradient-to-r from-gold-400/60 to-transparent" />
+                <div>
+                  <h1 className="font-display text-3xl sm:text-5xl lg:text-7xl font-extrabold text-ink leading-[1.1] sm:leading-[1.05] break-words">
+                    {product.name}
+                  </h1>
+                  <div className="mt-5 h-px w-16 bg-gradient-to-r from-gold-400/60 to-transparent" />
+                </div>
 
-              <div className="mt-4 flex items-center gap-2.5">
-                <StarRating rating={product.review_count > 0 ? product.average_rating : 0} showValue />
-                <span className="text-sm text-ink/45 font-medium">
-                  {product.review_count > 0
-                    ? `(${product.review_count} Customer review${product.review_count === 1 ? "" : "s"})`
-                    : "No reviews yet"}
-                </span>
+                <div className="inline-flex w-fit items-center gap-2.5 rounded-full border border-ink/10 bg-white px-4 py-2 shadow-soft">
+                  <StarRating rating={product.review_count > 0 ? product.average_rating : 0} showValue />
+                  <span className="h-3.5 w-px bg-ink/10" />
+                  <span className="text-sm text-ink/60 font-bold">
+                    {product.review_count > 0
+                      ? `${product.review_count} Customer review${product.review_count === 1 ? "" : "s"}`
+                      : "No reviews yet"}
+                  </span>
+                </div>
+
+                {product.description && (
+                  <p className="whitespace-pre-wrap text-lg sm:text-xl leading-relaxed text-ink/75 font-semibold">{product.description}</p>
+                )}
               </div>
-
-              {product.short_description && (
-                <p className="mt-6 text-base sm:text-lg leading-relaxed text-ink/65 font-light">{product.short_description}</p>
-              )}
 
               <div className="mt-8 border-t border-ink/10 pt-8">
                 <Suspense fallback={null}>
@@ -122,61 +161,14 @@ export default async function ProductDetailPage({ params }) {
                     variants={safeProduct.variants}
                     compatibleOutfits={safeCompatibleOutfits}
                     compatibleFabrics={safeCompatibleFabrics}
+                    garmentTypes={safeGarmentTypes}
+                    extraWorkOptions={safeExtraWorkOptions}
                   />
                 </Suspense>
               </div>
-
-              {/* Product Details Cards (fabric type, color, etc.) */}
-              {notes.length > 0 && (
-                <div className="mt-10 sm:mt-12 border-t border-ink/10 pt-6 sm:pt-8">
-                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-600 block mb-5">
-                    Product Details
-                  </span>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {notes.map((n, i) => {
-                      const NoteIcon = n.icon;
-                      return (
-                        <div
-                          key={n.label}
-                          className="group relative rounded-2xl border border-ink/10 bg-white p-5 sm:p-6 hover:border-gold-400/40 hover:bg-ivory-deep transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_0_30px_rgba(212,163,89,0.1)] overflow-hidden"
-                        >
-                          <div className="absolute inset-0 bg-gold-gradient opacity-0 group-hover:opacity-[0.03] transition-opacity duration-300 pointer-events-none" />
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gold-400/20 bg-gold-400/5 text-gold-600 shadow-[0_0_15px_rgba(212,163,89,0.08)] transition-all duration-300 group-hover:scale-110 group-hover:border-gold-400/50 group-hover:text-gold-700 group-hover:shadow-[0_0_20px_rgba(212,163,89,0.15)]">
-                              <NoteIcon className="w-5 h-5" strokeWidth={1.5} />
-                            </div>
-                            <p className="text-sm font-semibold uppercase tracking-widest text-gold-700">
-                              {n.label}
-                            </p>
-                          </div>
-                          <p className="text-lg sm:text-xl text-ink font-medium leading-snug">
-                            {n.value}
-                          </p>
-                          <p className="text-sm text-ink/50 font-light mt-2 leading-relaxed">
-                            {n.desc}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
             </Reveal>
           </ProductVariantProvider>
           </div>
-
-          {/* Product Description Section (Full Width) */}
-          {product.description && (
-            <Reveal className="mt-14 sm:mt-24 border-t border-ink/10 pt-10 sm:pt-16 max-w-4xl">
-              <p className="eyebrow">
-                <span className="gold-line" /> The Story
-              </p>
-              <h2 className="font-display text-2xl sm:text-3xl font-light text-ink mt-4 mb-6">Product Details</h2>
-              <p className="whitespace-pre-wrap text-base sm:text-lg leading-relaxed text-ink/65 font-light">
-                {product.description}
-              </p>
-            </Reveal>
-          )}
 
           {/* Symmetrical Grid: FAQs on left, Reviews on right */}
           <div className="mt-14 sm:mt-20 grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-16 border-t border-ink/10 pt-10 sm:pt-16">
@@ -188,22 +180,27 @@ export default async function ProductDetailPage({ params }) {
                   <p className="eyebrow">
                     <span className="gold-line" /> Need to Know
                   </p>
-                  <h2 className="font-display text-2xl sm:text-3xl font-light text-ink mt-4 mb-6">Common Questions</h2>
+                  <div className="flex items-center gap-3.5 mt-4 mb-6">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gold-400/20 bg-gold-400/5 text-gold-600 shadow-[0_0_15px_rgba(212,163,89,0.08)]">
+                      <HelpCircle className="w-5 h-5" strokeWidth={1.75} />
+                    </span>
+                    <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-ink">Common Questions</h2>
+                  </div>
                   <div className="space-y-4">
                     {product.faqs.map((faq) => (
                       <details key={faq.id} className="group overflow-hidden rounded-2xl border border-ink/10 bg-white hover:border-gold-400/30 hover:shadow-[0_0_25px_rgba(212,163,89,0.08)] transition-all duration-300">
-                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-base sm:text-lg font-medium text-ink hover:bg-ivory-deep">
+                        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 text-lg sm:text-xl font-bold text-ink hover:bg-gold-50/10">
                           {faq.question}
                           <ChevronDown className="h-4.5 w-4.5 shrink-0 text-gold-600 transition-transform group-open:rotate-180" />
                         </summary>
-                        <p className="px-5 pb-5 text-sm sm:text-base leading-relaxed text-ink/60 font-light border-t border-ink/10 pt-4 animate-fadeUp">{faq.answer}</p>
+                        <p className="px-5 pb-5 text-base sm:text-lg leading-relaxed text-ink/70 font-semibold border-t border-ink/10 pt-4 animate-fadeUp">{faq.answer}</p>
                       </details>
                     ))}
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full rounded-[2rem] border border-dashed border-ink/15 p-8 text-center text-ink/45 py-16 bg-ivory-deep">
-                  <p className="text-base">No FAQs available for this item.</p>
+                <div className="flex flex-col items-center justify-center h-full rounded-[2rem] border border-dashed border-ink/15 p-8 text-center text-ink/45 py-16 bg-white shadow-soft">
+                  <p className="text-base font-semibold">No FAQs available for this item.</p>
                 </div>
               )}
             </Reveal>
@@ -213,7 +210,12 @@ export default async function ProductDetailPage({ params }) {
               <p className="eyebrow">
                 <span className="gold-line" /> Customer Love
               </p>
-              <h2 className="font-display text-2xl sm:text-3xl font-light text-ink mt-4 mb-6">Ratings &amp; Reviews</h2>
+              <div className="flex items-center gap-3.5 mt-4 mb-6">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gold-400/20 bg-gold-400/5 text-gold-600 shadow-[0_0_15px_rgba(212,163,89,0.08)]">
+                  <MessageSquareHeart className="w-5 h-5" strokeWidth={1.75} />
+                </span>
+                <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-ink">Ratings &amp; Reviews</h2>
+              </div>
               <ReviewForm productId={product.id} existingReview={safeProduct.myReview} />
 
               <ReviewsList reviews={safeProduct.reviews} hasOwnReview={!!safeProduct.myReview} />
@@ -227,7 +229,12 @@ export default async function ProductDetailPage({ params }) {
               <p className="eyebrow">
                 <span className="gold-line" /> Complementary Selections
               </p>
-              <h2 className="font-display text-3xl sm:text-4xl font-light text-ink mt-4 mb-10">You Might Also Like</h2>
+              <div className="flex items-center gap-4 mt-4 mb-10">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-gold-400/20 bg-gold-400/5 text-gold-600 shadow-[0_0_15px_rgba(212,163,89,0.08)]">
+                  <Gift className="w-5 h-5" strokeWidth={1.75} />
+                </span>
+                <h2 className="font-display text-4xl sm:text-5xl font-extrabold text-ink">You Might Also Like</h2>
+              </div>
               <ProductGrid products={safeRelatedProducts} />
             </Reveal>
           )}

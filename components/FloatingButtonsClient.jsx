@@ -7,6 +7,9 @@ import { Phone } from "lucide-react";
 export default function FloatingButtonsClient({ whatsappHref, callHref }) {
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) return null;
+  // The garment-type picker has its own fixed bottom confirm bar — the call/
+  // WhatsApp bubbles would sit on top of it, so skip them on this page.
+  if (pathname?.includes("/choose/")) return null;
 
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-center gap-3">

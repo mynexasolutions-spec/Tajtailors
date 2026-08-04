@@ -21,7 +21,7 @@ export default function HowItWorks({ heading = "How It Works", steps }) {
   const headingLead = headingWords.join(" ");
 
   return (
-    <section className="relative overflow-hidden bg-ivory-deep py-16 sm:py-24">
+    <section className="relative overflow-hidden bg-white py-16 sm:py-24">
       <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-60">
         <div className="absolute left-1/4 top-0 h-[400px] w-[450px] rounded-full bg-gold-500/10 blur-[130px]" />
         <div className="absolute right-1/4 bottom-0 h-[400px] w-[450px] rounded-full bg-gold-300/10 blur-[130px]" />

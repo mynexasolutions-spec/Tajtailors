@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -14,48 +14,31 @@ import {
   Truck,
   Ruler,
   LifeBuoy,
+  ChevronRight,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { logout } from "@/actions/auth";
 import { BRAND } from "@/lib/constants";
 
-const NAV_LINKS = [
-  { label: "Home", href: "/" },
-  { label: "Buy Fabric & Stitch", href: "/shop?type=fabric" },
-  { label: "Stitch My Fabric", href: "/shop?type=outfit" },
-  { label: "About", href: "/about" },
-  { label: "Contact Us", href: "/contact" },
-];
 
-function UtilityBar({ message, brandInfo }) {
+function UtilityBar({ brandInfo, announcement }) {
+  if (!announcement) return null;
+
   return (
-    <div className="relative overflow-hidden border-b border-gold-400/15 bg-ivory-deep">
-      <div className="relative mx-auto flex max-w-wrap items-center justify-center gap-2.5 px-4 py-2 sm:justify-between sm:px-6 md:px-12">
-        <p className="truncate text-xs font-medium tracking-wide text-gold-700 sm:text-sm">
-          {message}
+    <div className="relative overflow-hidden border-b border-gold-400/15 bg-ink text-white/95">
+      <div className="relative mx-auto flex max-w-wrap items-center justify-center px-4 py-2 sm:px-6 md:px-12">
+        <p className="flex items-center text-xs font-semibold tracking-wider text-gold-200 uppercase sm:text-xs text-center">
+          {announcement}
         </p>
-        <div className="hidden shrink-0 items-center gap-5 text-sm font-medium text-ink/60 sm:flex">
-          <Link href="/account/orders" className="flex items-center gap-1.5 transition-colors hover:text-gold-700">
-            <Truck className="h-3.5 w-3.5 text-gold-600" /> Track Order
-          </Link>
-          <Link href="/about" className="flex items-center gap-1.5 transition-colors hover:text-gold-700">
-            <Ruler className="h-3.5 w-3.5 text-gold-600" /> Measurement Guide
-          </Link>
-          <Link href="/contact" className="flex items-center gap-1.5 transition-colors hover:text-gold-700">
-            <LifeBuoy className="h-3.5 w-3.5 text-gold-600" /> Help & Support
-          </Link>
-          <a href={`tel:${brandInfo.whatsappDisplay.replace(/\s/g, "")}`} className="flex items-center gap-1.5 transition-colors hover:text-gold-700">
-            <FaWhatsapp className="h-3.5 w-3.5 text-[#25D366]" /> {brandInfo.whatsappDisplay}
-          </a>
-        </div>
       </div>
       <div className="absolute inset-x-0 bottom-0 h-px bg-gold-gradient bg-[length:200%_200%] animate-shimmer" />
     </div>
   );
 }
 
-function Logo() {
+function Logo({ scrolled }) {
   return (
     <Link href="/" className="group flex shrink-0 items-center">
       <Image
@@ -64,7 +47,9 @@ function Logo() {
         width={1672}
         height={941}
         priority
-        className="h-12 w-auto object-contain transition-transform duration-500 group-hover:scale-105 sm:h-16"
+        className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${
+          scrolled ? "h-9 sm:h-12" : "h-11 sm:h-16"
+        }`}
       />
     </Link>
   );
@@ -74,9 +59,19 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [scrolled, setScrolled] = useState(false);
   const { cartCount, setDrawerOpen } = useCart();
+  const { wishlistCount } = useWishlist();
   const pathname = usePathname();
   const router = useRouter();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -87,10 +82,138 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
     }
   };
 
+  const NAV_LINKS = [
+    { label: "Home", href: "/" },
+    {
+      label: "Buy Fabric & Stitch",
+      href: "/shop?type=fabric",
+      megaMenu: (
+        <div className="grid grid-cols-3 gap-8 p-8 text-left">
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gold-700">Premium Fabrics</h4>
+            <ul className="space-y-2.5">
+              {[
+                "Pure Giza Cotton",
+                "Premium Irish Linen",
+                "Luxury Merino Wool",
+                "Banarasi Silk & Brocade",
+                "Royal Velvet Collection"
+              ].map((f) => (
+                <li key={f}>
+                  <Link href="/shop?type=fabric" className="text-sm text-ink/75 hover:text-gold-600 transition-colors flex items-center gap-2">
+                    <span className="h-1 w-1 rounded-full bg-gold-400" /> {f}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gold-700">Bespoke Outfits</h4>
+            <ul className="space-y-2.5">
+              {[
+                "Royal Sherwani",
+                "Jodhpuri & Bandhgala",
+                "Modern Indowestern",
+                "Classic Suit & Blazer",
+                "Designer Kurta Pajama"
+              ].map((s) => (
+                <li key={s}>
+                  <Link href="/shop?type=outfit" className="text-sm text-ink/75 hover:text-gold-600 transition-colors flex items-center gap-2">
+                    <span className="h-1 w-1 rounded-full bg-gold-400" /> {s}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-xl bg-gold-50/50 border border-gold-200/50 p-5 flex flex-col justify-between">
+            <div>
+              <span className="inline-block px-2.5 py-0.5 rounded-full bg-gold-500 text-[10px] font-bold text-white uppercase tracking-wider mb-3">
+                Craftsmanship
+              </span>
+              <h5 className="font-display text-base font-bold text-ink mb-1.5">
+                The Royal Tailoring Experience
+              </h5>
+              <p className="text-xs leading-relaxed text-ink/65">
+                Every detail custom-curated, from custom buttons to premium lining. Tailored to your exact posture by master artisans.
+              </p>
+            </div>
+            <Link href="/shop?type=fabric" className="mt-4 inline-flex items-center justify-center rounded-full bg-ink px-4 py-2 text-xs font-bold text-white hover:bg-gold-600 hover:text-ink transition-all">
+              Start Designing &rarr;
+            </Link>
+          </div>
+        </div>
+      )
+    },
+    {
+      label: "Stitch My Fabric",
+      href: "/shop?type=outfit",
+      megaMenu: (
+        <div className="grid grid-cols-3 gap-8 p-8 text-left">
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gold-700">How It Works</h4>
+            <ul className="space-y-3">
+              {[
+                { step: "1. Book Service", desc: "Select outfit type and secure your slot" },
+                { step: "2. Doorstep Pickup", desc: "We collect your fabric from your home" },
+                { step: "3. Master Stitching", desc: "Crafted according to your exact fit" },
+                { step: "4. Trial & Delivery", desc: "Free alterations at your convenience" }
+              ].map((item, idx) => (
+                <li key={idx} className="space-y-0.5">
+                  <span className="block text-xs font-bold text-ink">{item.step}</span>
+                  <span className="block text-[11px] text-ink/60 leading-normal">{item.desc}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gold-700">Stitching Rates</h4>
+            <ul className="space-y-2.5">
+              {[
+                { outfit: "Custom Sherwani", price: "₹4,999" },
+                { outfit: "Designer Blazer / Suit", price: "₹3,499" },
+                { outfit: "Waistcoat / Nehru Jacket", price: "₹1,499" },
+                { outfit: "Premium Kurta Pajama", price: "₹1,199" },
+                { outfit: "Bespoke Trousers", price: "₹699" }
+              ].map((r, idx) => (
+                <li key={idx} className="flex items-center justify-between text-sm">
+                  <span className="text-ink/75 hover:text-gold-600 transition-colors">{r.outfit}</span>
+                  <span className="font-bold text-gold-700 text-xs">{r.price}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-xl bg-ink text-white p-5 flex flex-col justify-between shadow-lg">
+            <div>
+              <span className="inline-block px-2.5 py-0.5 rounded-full bg-gold-gradient text-[10px] font-bold text-ink uppercase tracking-wider mb-3">
+                Fit Guarantee
+              </span>
+              <h5 className="font-display text-base font-bold text-gold-100 mb-1.5">
+                100% Custom Fit Promise
+              </h5>
+              <p className="text-xs leading-relaxed text-white/70">
+                Not a perfect fit? No worries! We provide complimentary pickup and adjustments until you are completely satisfied.
+              </p>
+            </div>
+            <Link href="/contact" className="mt-4 inline-flex items-center justify-center rounded-full bg-gold-gradient px-4 py-2 text-xs font-bold text-ink hover:opacity-90 transition-all">
+              Contact Designer &rarr;
+            </Link>
+          </div>
+        </div>
+      )
+    },
+    { label: "About", href: "/about" },
+    { label: "Contact Us", href: "/contact" },
+  ];
+
   return (
-    <header className={`sticky top-0 z-40 border-b border-ink/5 transition-colors duration-300 ${mobileOpen ? "bg-white" : "bg-white/90 backdrop-blur-lg"
-      }`}>
-      <UtilityBar message={announcement || "Welcome to Taj Tailor – Premium Tailoring at Your Doorstep"} brandInfo={brandInfo} />
+    <header className={`sticky top-0 z-40 transition-all duration-300 ${
+      mobileOpen
+        ? "bg-white"
+        : scrolled
+          ? "bg-white/80 backdrop-blur-xl border-b border-gold-500/10 shadow-soft"
+          : "bg-white/95 backdrop-blur-lg border-b border-ink/5"
+    }`}>
+      <UtilityBar brandInfo={brandInfo} announcement={announcement} />
 
       {/* Shimmering bottom hairline */}
       <div className="absolute inset-x-0 bottom-0 h-px bg-gold-gradient bg-[length:200%_200%] animate-shimmer" />
@@ -108,9 +231,8 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
               <Link
                 key={link.label}
                 href={link.href}
-                className={`group/link relative rounded-full px-4 py-2 text-[13px] font-medium uppercase tracking-wide transition-all duration-300 ${
-                  isActive ? "text-gold-700 bg-gold-400/10" : "text-ink/70 hover:text-gold-700 hover:bg-gold-400/5"
-                }`}
+                className={`group/link relative rounded-full px-4 py-2 text-[13px] font-medium uppercase tracking-wide transition-all duration-300 ${isActive ? "text-gold-700 bg-gold-400/10" : "text-ink/70 hover:text-gold-700 hover:bg-gold-400/5"
+                  }`}
               >
                 {link.label}
                 {isActive ? (
@@ -131,11 +253,10 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
           <button
             onClick={() => setSearchOpen((o) => !o)}
             aria-label="Search"
-            className={`flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border transition-all duration-300 hover:scale-105 hover:shadow-gold ${
-              searchOpen
+            className={`flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border transition-all duration-300 hover:scale-105 hover:shadow-gold ${searchOpen
                 ? "border-gold-400/40 bg-gold-400/10 text-gold-700"
                 : "border-ink/10 bg-white text-ink/70 hover:border-gold-400/30 hover:bg-ivory-deep hover:text-gold-700"
-            }`}
+              }`}
           >
             <Search className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
@@ -163,11 +284,16 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
 
           {/* Wishlist */}
           <Link
-            href="/account"
+            href="/wishlist"
             aria-label="Wishlist"
-            className="hidden h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-ink/10 bg-white text-ink/70 transition-all duration-300 hover:border-gold-400/30 hover:bg-ivory-deep hover:text-gold-700 hover:scale-105 hover:shadow-gold sm:flex"
+            className="relative hidden h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-ink/10 bg-white text-ink/70 transition-all duration-300 hover:border-gold-400/30 hover:bg-ivory-deep hover:text-gold-700 hover:scale-105 hover:shadow-gold sm:flex"
           >
             <Heart className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+            {wishlistCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-gold-gradient text-[8px] sm:text-[9px] font-bold text-ink shadow-gold">
+                {wishlistCount}
+              </span>
+            )}
           </Link>
 
           {/* Cart Icon */}
@@ -247,13 +373,29 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
                 className={`rounded-xl px-4 py-3 font-display text-lg tracking-wide transition-all ${pathname === link.href
-                    ? "bg-gold-400/10 text-gold-700 font-medium"
-                    : "text-ink hover:bg-ivory-deep hover:text-gold-700"
+                  ? "bg-gold-400/10 text-gold-700 font-medium"
+                  : "text-ink hover:bg-ivory-deep hover:text-gold-700"
                   }`}
               >
                 {link.label}
               </Link>
             ))}
+
+            <Link
+              href="/wishlist"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-between rounded-xl px-4 py-3 font-display text-lg tracking-wide text-ink hover:bg-ivory-deep hover:text-gold-700 transition-all"
+            >
+              <span className="flex items-center gap-2">
+                <Heart className="h-5 w-5 text-gold-500" />
+                Wishlist
+              </span>
+              {wishlistCount > 0 && (
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gold-gradient text-[10px] font-bold text-ink shadow-gold">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
 
             {isLoggedIn ? (
               <div className="flex items-center gap-2">
@@ -290,3 +432,4 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
     </header>
   );
 }
+

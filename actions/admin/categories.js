@@ -43,6 +43,7 @@ export async function createCategory(_prevState, formData) {
     slug: slugify(name),
     description: formData.get("description") || null,
     image_url: formData.get("image_url") || null,
+    variant_label: formData.get("variant_label") || "Variant",
     sort_order: Number(formData.get("sort_order") || 0),
     is_active: formData.get("is_active") === "on",
   });
@@ -67,6 +68,7 @@ export async function updateCategory(_prevState, formData) {
       slug: slugify(name),
       description: formData.get("description") || null,
       image_url: formData.get("image_url") || null,
+      variant_label: formData.get("variant_label") || "Variant",
       sort_order: Number(formData.get("sort_order") || 0),
       is_active: formData.get("is_active") === "on",
     })

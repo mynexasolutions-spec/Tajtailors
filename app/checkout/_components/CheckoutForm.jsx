@@ -4,15 +4,33 @@ import { useState } from "react";
 import Script from "next/script";
 import Link from "next/link";
 import Image from "next/image";
-import { Banknote, CreditCard, CheckCircle2, Minus, Plus, Truck } from "lucide-react";
+import { Banknote, CreditCard, CheckCircle2, Minus, Plus, Truck, MapPin } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
 import { processCheckout, verifyRazorpayPayment, validateCoupon } from "@/actions/checkout";
 import { calculateQuantityDiscount } from "@/lib/constants";
+import SherwaniGlyph from "@/components/SherwaniGlyph";
 
 const inputClass =
-  "w-full rounded-2xl border border-ink/10 bg-ivory-deep px-5 py-4 text-base text-ink placeholder:text-ink/30 transition-all duration-500 focus:border-gold-400/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/30";
-const labelClass = "mb-2 block text-xs font-semibold uppercase tracking-widest text-gold-600/90";
+  "w-full rounded-2xl border border-ink/10 bg-white px-5 py-4 text-base text-ink placeholder:text-ink/30 transition-all duration-500 focus:border-gold-400/50 focus:shadow-[0_0_20px_rgba(212,163,89,0.06)] focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/30";
+const labelClass = "mb-2 block text-xs sm:text-sm font-bold uppercase tracking-[0.15em] text-gold-700";
+
+// Numbered section headings — same visual language as the outfit
+// configurator's steps, so the checkout form reads as a continuation of the
+// same journey instead of a plain generic form.
+function SectionHeading({ number, icon: Icon, children }) {
+  return (
+    <div className="border-b border-gold-400/10 pb-3 mb-6">
+      <p className="flex items-center gap-3 font-display text-lg sm:text-xl uppercase tracking-[0.15em] text-gold-700 font-bold">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gold-gradient text-xs font-bold text-ink shadow-gold">
+          {number}
+        </span>
+        {Icon && <Icon className="h-5 w-5 text-gold-600" />}
+        {children}
+      </p>
+    </div>
+  );
+}
 
 export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, quantityDiscount }) {
   const { cart, cartSubtotal, cartCount, clearCart, updateQuantity } = useCart();
@@ -195,32 +213,84 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
 
   if (confirmedOrder) {
     return (
-      <div className="relative overflow-hidden rounded-[2.5rem] border border-gold-400/20 bg-gradient-to-b from-white via-ivory to-ivory-deep px-10 sm:px-16 pt-6 sm:pt-8 pb-10 sm:pb-16 text-center shadow-2xl">
-        {/* Decorative glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(202,161,75,0.12),transparent_65%)] pointer-events-none" />
-        <div className="absolute -left-20 -top-20 w-72 h-72 rounded-full bg-gold-400/10 blur-[100px] pointer-events-none" />
-        <div className="absolute -right-16 -bottom-16 w-72 h-72 rounded-full bg-gold-300/10 blur-[100px] pointer-events-none" />
+      <div className="relative overflow-hidden rounded-[2.5rem] border border-gold-400/20 bg-white px-10 sm:px-20 pt-12 pb-14 text-center shadow-2xl animate-pop">
+        {/* Luxury top accent bar with animation */}
+        <div className="absolute inset-x-0 top-0 h-[4px] bg-gold-gradient bg-[length:200%_200%] animate-shimmer" />
 
-        <div className="relative">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border border-gold-400/30 bg-gold-400/10 shadow-[0_0_40px_rgba(212,163,89,0.15)]">
-            <CheckCircle2 className="h-8 w-8 text-gold-600" strokeWidth={1.5} />
+        {/* CSS Keyframe Animations for Luxury Sparkles */}
+        <style>{`
+          @keyframes floatSparkle {
+            0%, 100% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.35; }
+            50% { transform: translateY(-20px) scale(1.2) rotate(180deg); opacity: 0.95; }
+          }
+          @keyframes scalePop {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+          }
+          @keyframes lineGrow {
+            0% { width: 0; opacity: 0; }
+            100% { width: 96px; opacity: 1; }
+          }
+          .animate-sparkle-1 { animation: floatSparkle 7s ease-in-out infinite; }
+          .animate-sparkle-2 { animation: floatSparkle 9s ease-in-out infinite 1.5s; }
+          .animate-sparkle-3 { animation: floatSparkle 8s ease-in-out infinite 3.5s; }
+          .animate-sparkle-4 { animation: floatSparkle 10s ease-in-out infinite 0.5s; }
+          .animate-sparkle-5 { animation: floatSparkle 6s ease-in-out infinite 2s; }
+          .animate-pop { animation: scalePop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+          .animate-line-grow { animation: lineGrow 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards; }
+          @keyframes floatClothes {
+            0%, 100% { transform: translateY(0) rotate(-3deg); }
+            50% { transform: translateY(-8px) rotate(3deg); }
+          }
+          .animate-floatClothes { animation: floatClothes 5s ease-in-out infinite; }
+        `}</style>
+
+        {/* Floating Sparkles & Luxury Elements */}
+        <div className="absolute top-[15%] left-[8%] w-5 h-5 text-gold-500/40 animate-sparkle-1 pointer-events-none">
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full"><path d="M12 0l3 9 9 3-9 3-3 9-3-9-9-3 9-3z"/></svg>
+        </div>
+        <div className="absolute top-[25%] right-[10%] w-6 h-6 text-gold-500/50 animate-sparkle-2 pointer-events-none">
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full"><path d="M12 0l2.5 8.5 8.5 2.5-8.5 2.5-2.5 8.5-2.5-8.5-8.5-2.5 8.5-2.5z"/></svg>
+        </div>
+        <div className="absolute bottom-[20%] left-[12%] w-4 h-4 text-gold-500/30 animate-sparkle-3 pointer-events-none">
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full"><path d="M12 2a10 10 0 1010 10A10 10 0 0012 2z"/></svg>
+        </div>
+        <div className="absolute bottom-[30%] right-[15%] w-5 h-5 text-gold-500/40 animate-sparkle-4 pointer-events-none">
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full"><path d="M12 0l3 9 9 3-9 3-3 9-3-9-9-3 9-3z"/></svg>
+        </div>
+        <div className="absolute top-[50%] left-[5%] w-3 h-3 text-gold-500/30 animate-sparkle-5 pointer-events-none">
+          <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full"><path d="M12 2a10 10 0 1010 10A10 10 0 0012 2z"/></svg>
+        </div>
+
+        {/* Decorative backdrop glow */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(202,161,75,0.05),transparent_65%)] pointer-events-none" />
+
+        <div className="relative z-10 pt-4">
+          {/* Animated Stamp Seal Check */}
+          <div className="relative mx-auto mb-6 flex h-28 w-28 items-center justify-center">
+            <span className="absolute inset-0 rounded-full bg-gold-400/10 border border-gold-400/20 animate-ping opacity-75" />
+            <span className="absolute inset-2 rounded-full bg-gold-400/5 border border-gold-400/30 animate-pulse" />
+            <div className="relative flex h-20 w-20 items-center justify-center rounded-full border border-gold-400/30 bg-white shadow-soft transition-transform duration-500 hover:scale-105">
+              <CheckCircle2 className="h-10 w-10 text-gold-600 animate-pulse" strokeWidth={1.5} />
+            </div>
           </div>
 
-          <p className="eyebrow justify-center text-sm">
+          <p className="eyebrow justify-center text-xs tracking-[0.25em] font-bold text-gold-700 uppercase">
             <span className="gold-line" /> Order Confirmed
           </p>
-          <h2 className="font-display mt-4 text-4xl sm:text-6xl font-light text-transparent bg-clip-text bg-gradient-to-r from-gold-600 via-gold-500 to-gold-700">
+          <h2 className="font-display mt-4 text-5xl sm:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gold-600 via-gold-500 to-gold-700 tracking-tight">
             Thank You!
           </h2>
-          <div className="mx-auto mt-6 h-px w-24 bg-gradient-to-r from-transparent via-gold-400/60 to-transparent" />
-          <p className="mt-8 text-base sm:text-xl text-ink/60 font-light max-w-xl mx-auto leading-relaxed">
-            Your order <span className="font-semibold text-gold-600">{confirmedOrder}</span> has been placed successfully.
+          <div className="mx-auto mt-6 h-[1.5px] w-24 bg-gradient-to-r from-transparent via-gold-400/60 to-transparent animate-line-grow" />
+          <p className="mt-8 text-base sm:text-xl text-ink/70 font-semibold max-w-xl mx-auto leading-relaxed">
+            Your order <span className="font-bold text-gold-600 tracking-wide">{confirmedOrder}</span> has been placed successfully.
           </p>
+          
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link href="/shop" className="btn-gold inline-flex w-full sm:w-fit px-10 py-4 text-sm font-semibold tracking-wide hover:scale-[1.02] transition-transform">
+            <Link href="/shop" className="btn-gold inline-flex w-full sm:w-fit px-10 py-4 text-xs font-bold tracking-[0.15em] uppercase hover:scale-[1.02] transition-transform shadow-gold">
               Continue Shopping
             </Link>
-            <Link href="/account" className="btn-outline inline-flex w-full sm:w-fit px-10 py-4 text-sm font-semibold tracking-wide hover:scale-[1.02] transition-transform">
+            <Link href="/account" className="btn-outline inline-flex w-full sm:w-fit px-10 py-4 text-xs font-bold tracking-[0.15em] uppercase hover:scale-[1.02] transition-transform">
               My Orders
             </Link>
           </div>
@@ -244,9 +314,9 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
     <>
       {razorpayEnabled && <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />}
 
-      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_380px]">
-        <form onSubmit={handleSubmit} noValidate className="space-y-6">
-          <h2 className="font-display text-xl sm:text-2xl uppercase tracking-widest text-gold-600/90">Shipping Details</h2>
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1fr_420px] lg:gap-16">
+        <form onSubmit={handleSubmit} noValidate className="space-y-8">
+          <SectionHeading number={1} icon={MapPin}>Shipping Details</SectionHeading>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
@@ -320,14 +390,14 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
 
           {needsPickup && (
             <>
-              <h2 className="pt-4 font-display text-xl sm:text-2xl uppercase tracking-widest text-gold-600/90 flex items-center gap-2">
-                <Truck className="h-5 w-5" /> Pickup Details
-              </h2>
-              <p className="text-sm text-ink/45 -mt-4">
+              <div className="pt-2">
+                <SectionHeading number={2} icon={Truck}>Pickup Details</SectionHeading>
+              </div>
+              <p className="text-sm text-ink/65 font-semibold -mt-4">
                 Your order includes an item where you're sending your own fabric or a reference garment — we'll arrange a courier pickup.
               </p>
 
-              <label className="flex items-center gap-2.5 rounded-2xl border border-gold-400/15 bg-ivory-deep px-5 py-3.5 text-sm text-ink/70">
+              <label className="flex items-center gap-2.5 rounded-2xl border border-gold-400/15 bg-white px-5 py-3.5 text-sm text-ink/75 font-semibold">
                 <input
                   type="checkbox"
                   checked={pickupSameAsDelivery}
@@ -380,14 +450,16 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
             </>
           )}
 
-          <h2 className="pt-4 font-display text-xl sm:text-2xl uppercase tracking-widest text-gold-600/90">Payment Method</h2>
+          <div className="pt-2">
+            <SectionHeading number={needsPickup ? 3 : 2} icon={CreditCard}>Payment Method</SectionHeading>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {codEnabled && (
               <label
-                className={`group relative flex cursor-pointer items-start gap-4 rounded-2xl border p-5 transition-all duration-500 hover:-translate-y-0.5 ${
+                className={`group relative flex cursor-pointer items-start gap-4 rounded-2xl border p-5 transition-all duration-500 hover:-translate-y-1 ${
                   paymentMethod === "COD"
-                    ? "border-gold-400/60 bg-gold-400/5 shadow-[0_0_20px_rgba(212,163,89,0.05)]"
-                    : "border-gold-400/15 bg-ivory-deep hover:border-gold-400/40"
+                    ? "border-gold-400 bg-gold-50/20 shadow-soft"
+                    : "border-ink/10 bg-white hover:border-gold-400/40 hover:shadow-soft"
                 }`}
               >
                 <input
@@ -400,7 +472,7 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
                 
                 {/* Custom Radio Ring */}
                 <div className={`mt-1 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
-                  paymentMethod === "COD" ? "border-gold-400 bg-gold-400" : "border-gold-400/30"
+                  paymentMethod === "COD" ? "border-gold-400 bg-gold-400" : "border-ink/20"
                 }`}>
                   <div className={`h-1.5 w-1.5 rounded-full bg-ink transition-transform duration-300 ${paymentMethod === "COD" ? "scale-100" : "scale-0"}`} />
                 </div>
@@ -408,19 +480,19 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
                     <Banknote className={`h-5 w-5 ${paymentMethod === "COD" ? "text-gold-600" : "text-ink/40 group-hover:text-gold-500"} transition-colors duration-300`} />
-                    <span className="font-semibold text-base text-ink tracking-wide">Cash on Delivery</span>
+                    <span className="font-bold text-base text-ink tracking-wide">Cash on Delivery</span>
                   </div>
-                  <p className="text-sm leading-relaxed text-ink/45 font-light">Pay when your order arrives (₹{shipping.cod_charge} COD fee applies).</p>
+                  <p className="text-sm leading-relaxed text-ink/65 font-semibold">Pay when your order arrives (₹{shipping.cod_charge} COD fee applies).</p>
                 </div>
               </label>
             )}
 
             {razorpayEnabled && (
               <label
-                className={`group relative flex cursor-pointer items-start gap-4 rounded-2xl border p-5 transition-all duration-500 hover:-translate-y-0.5 ${
+                className={`group relative flex cursor-pointer items-start gap-4 rounded-2xl border p-5 transition-all duration-500 hover:-translate-y-1 ${
                   paymentMethod === "RAZORPAY"
-                    ? "border-gold-400/60 bg-gold-400/5 shadow-[0_0_20px_rgba(212,163,89,0.05)]"
-                    : "border-gold-400/15 bg-ivory-deep hover:border-gold-400/40"
+                    ? "border-gold-400 bg-gold-50/20 shadow-soft"
+                    : "border-ink/10 bg-white hover:border-gold-400/40 hover:shadow-soft"
                 }`}
               >
                 <input
@@ -433,7 +505,7 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
 
                 {/* Custom Radio Ring */}
                 <div className={`mt-1 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ${
-                  paymentMethod === "RAZORPAY" ? "border-gold-400 bg-gold-400" : "border-gold-400/30"
+                  paymentMethod === "RAZORPAY" ? "border-gold-400 bg-gold-400" : "border-ink/20"
                 }`}>
                   <div className={`h-1.5 w-1.5 rounded-full bg-ink transition-transform duration-300 ${paymentMethod === "RAZORPAY" ? "scale-100" : "scale-0"}`} />
                 </div>
@@ -441,9 +513,9 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
                     <CreditCard className={`h-5 w-5 ${paymentMethod === "RAZORPAY" ? "text-gold-600" : "text-ink/40 group-hover:text-gold-500"} transition-colors duration-300`} />
-                    <span className="font-semibold text-base text-ink tracking-wide">Pay Online</span>
+                    <span className="font-bold text-base text-ink tracking-wide">Pay Online</span>
                   </div>
-                  <p className="text-sm leading-relaxed text-ink/45 font-light">Cards, UPI, and netbanking via Razorpay.</p>
+                  <p className="text-sm leading-relaxed text-ink/65 font-semibold">Cards, UPI, and netbanking via Razorpay.</p>
                 </div>
               </label>
             )}
@@ -459,17 +531,20 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
           <button
             type="submit"
             disabled={submitting || !paymentMethod}
-            className="btn-gold group w-full sm:w-fit px-10 py-5 text-sm font-semibold tracking-widest uppercase disabled:opacity-60 shadow-[0_4px_20px_rgba(212,163,89,0.12)] hover:shadow-[0_4px_25px_rgba(212,163,89,0.25)] hover:-translate-y-0.5 transition-all duration-300 mt-4 text-center"
+            className="btn-gold group w-full sm:w-fit px-12 py-5 text-xs font-bold tracking-[0.2em] uppercase disabled:opacity-60 shadow-gold hover:shadow-lg hover:-translate-y-1 transition-all duration-300 mt-4 text-center"
           >
-            {submitting ? "Placing Order…" : `Place Order — ₹${total.toLocaleString("en-IN")}`}
+            {submitting ? "Placing Order…" : `Place Order · ₹${total.toLocaleString("en-IN")}`}
           </button>
         </form>
 
-        <div className="relative rounded-[2.5rem] border border-gold-400/15 bg-gradient-to-b from-white via-ivory to-ivory-deep p-6 sm:p-8 space-y-5 shadow-2xl h-fit">
+        <div className="relative rounded-[2.5rem] border border-gold-400/15 bg-white p-6 sm:p-8 space-y-6 shadow-2xl h-fit overflow-hidden">
+          {/* Seductive gold accent bar on top of card */}
+          <div className="absolute inset-x-0 top-0 h-[3px] bg-gold-gradient" />
+          
           {/* Subtle radial backdrop to echo the About page's glass panels */}
-          <div className="absolute inset-0 rounded-[2.5rem] bg-[radial-gradient(circle_at_top,rgba(202,161,75,0.08),transparent_70%)] pointer-events-none" />
+          <div className="absolute inset-0 rounded-[2.5rem] bg-[radial-gradient(circle_at_top,rgba(202,161,75,0.04),transparent_70%)] pointer-events-none" />
 
-          <h2 className="relative font-display text-xl sm:text-2xl uppercase tracking-widest text-gold-600/90">Order Summary</h2>
+          <h2 className="relative font-display text-xl sm:text-2xl uppercase tracking-widest text-gold-600/90 font-bold">Order Summary</h2>
           <ul className="relative space-y-4">
             {cart.map((item) => (
               <li key={(item.cartKey || item.variantId)} className="flex gap-4 items-center pb-4 border-b border-gold-400/5 last:border-b-0 last:pb-0">
@@ -488,12 +563,12 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
                 </div>
                 {/* Details */}
                 <div className="flex-1 min-w-0">
-                  <h4 className="truncate text-base font-medium text-ink">{item.name}</h4>
+                  <h4 className="truncate text-base font-bold text-ink">{item.name}</h4>
                   {item.variantName && (
-                    <span className="text-sm text-ink/45">{item.variantName}</span>
+                    <span className="text-sm text-ink/50 font-semibold">{item.variantName}</span>
                   )}
                   {item.fabricName && (
-                    <p className="text-sm text-ink/45">
+                    <p className="text-sm text-ink/50 font-semibold">
                       {item.ownFabric ? "Customer's own fabric" : `${item.fabricName} (${item.meters}m)`}
                       {item.measurementType === "reference_garment" && " · Reference garment"}
                     </p>
@@ -529,30 +604,30 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
           </ul>
 
           <div className="relative space-y-2 border-t border-gold-400/10 pt-4 text-base">
-            <div className="flex justify-between text-ink/55 font-light">
+            <div className="flex justify-between text-ink/65 font-semibold">
               <span>Subtotal</span>
-              <span className="text-ink font-medium">₹{cartSubtotal.toLocaleString("en-IN")}</span>
+              <span className="text-ink font-bold">₹{cartSubtotal.toLocaleString("en-IN")}</span>
             </div>
-            <div className="flex justify-between text-ink/55 font-light">
+            <div className="flex justify-between text-ink/65 font-semibold">
               <span>Shipping</span>
-              <span className="text-ink font-medium">{shippingCost === 0 ? "Free" : `₹${shippingCost}`}</span>
+              <span className="text-ink font-bold">{shippingCost === 0 ? "Free" : `₹${shippingCost}`}</span>
             </div>
             {codCost > 0 && (
-              <div className="flex justify-between text-ink/55 font-light">
+              <div className="flex justify-between text-ink/65 font-semibold">
                 <span>COD Fee</span>
-                <span className="text-ink font-medium">₹{codCost}</span>
+                <span className="text-ink font-bold">₹{codCost}</span>
               </div>
             )}
             {qtyDiscount > 0 && (
-              <div className="flex justify-between text-green-600 font-light">
+              <div className="flex justify-between text-green-600 font-semibold">
                 <span>Bulk Discount ({cartCount} items)</span>
-                <span className="font-medium">-₹{qtyDiscount.toLocaleString("en-IN")}</span>
+                <span className="font-bold">-₹{qtyDiscount.toLocaleString("en-IN")}</span>
               </div>
             )}
             {couponDiscount > 0 && (
-              <div className="flex justify-between text-green-600 font-light">
+              <div className="flex justify-between text-green-600 font-semibold">
                 <span>Coupon ({appliedCoupon.code})</span>
-                <span className="font-medium">-₹{couponDiscount.toLocaleString("en-IN")}</span>
+                <span className="font-bold">-₹{couponDiscount.toLocaleString("en-IN")}</span>
               </div>
             )}
             <div className="flex justify-between border-t border-gold-400/15 pt-3 font-display text-lg text-ink">
@@ -561,18 +636,18 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
             </div>
           </div>
 
-          <div className="relative flex flex-col sm:flex-row gap-2 border-t border-gold-400/15 pt-4">
+          <div className="relative flex items-center border border-ink/10 rounded-2xl bg-white focus-within:border-gold-400/50 transition-all duration-300 pr-1.5 focus-within:shadow-[0_0_15px_rgba(212,163,89,0.06)]">
             <input
-              placeholder="Coupon code"
+              placeholder="Enter coupon code"
               value={couponInput}
               onChange={(e) => setCouponInput(e.target.value)}
-              className="min-w-0 flex-1 rounded-2xl border border-ink/10 bg-white px-4 py-3 text-sm text-ink placeholder:text-ink/30 transition-all duration-300 focus:border-gold-400/50 focus:outline-none"
+              className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-sm text-ink placeholder:text-ink/30 focus:outline-none"
             />
             <button
               type="button"
               onClick={handleApplyCoupon}
               disabled={applyingCoupon || !couponInput}
-              className="btn-outline shrink-0 rounded-2xl px-5 py-3 text-xs disabled:opacity-60 hover:bg-gold-400/10 transition-colors duration-300"
+              className="btn-gold shrink-0 rounded-xl px-5 py-2.5 text-[10px] font-bold tracking-widest uppercase disabled:opacity-40"
             >
               {applyingCoupon ? "Checking…" : "Apply"}
             </button>

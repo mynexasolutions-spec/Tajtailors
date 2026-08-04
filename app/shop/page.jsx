@@ -11,7 +11,7 @@ import { getProducts } from "@/actions/products";
 
 export const metadata = { title: "Shop All Products - Taj Tailor" };
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 12;
 
 function getPageNumbers(current, total) {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
@@ -29,7 +29,7 @@ export default async function ShopPage({ searchParams }) {
   const params = await searchParams;
   const minPrice = params.minPrice ? Number(params.minPrice) : undefined;
   const maxPrice = params.maxPrice ? Number(params.maxPrice) : undefined;
-  const [categories, products] = await Promise.all([
+  const [categories, allProducts] = await Promise.all([
     getActiveCategories(),
     getProducts({
       categoryId: params.category || undefined,
@@ -40,6 +40,9 @@ export default async function ShopPage({ searchParams }) {
       maxPrice,
     }),
   ]);
+
+  const inStockOnly = params.inStock === "1";
+  const products = inStockOnly ? allProducts.filter((p) => p.inStock !== false) : allProducts;
 
   const activeCategoryName = categories.find((c) => c.id === params.category)?.name;
   const TYPE_LABELS = { fabric: "Fabric", kurta: "Ready-Made Kurta", outfit: "Custom Outfit" };
@@ -57,6 +60,7 @@ export default async function ShopPage({ searchParams }) {
     params.category ? { key: "category", label: activeCategoryName || "Category" } : null,
     !params.category && params.type ? { key: "type", label: TYPE_LABELS[params.type] || params.type } : null,
     minPrice || maxPrice ? { key: "price", label: priceChipLabel() } : null,
+    inStockOnly ? { key: "inStock", label: "In Stock Only" } : null,
   ].filter(Boolean);
 
   const chipHref = (omitKey) => {
@@ -69,6 +73,7 @@ export default async function ShopPage({ searchParams }) {
       if (params.minPrice) usp.set("minPrice", params.minPrice);
       if (params.maxPrice) usp.set("maxPrice", params.maxPrice);
     }
+    if (inStockOnly && omitKey !== "inStock") usp.set("inStock", "1");
     const qs = usp.toString();
     return qs ? `/shop?${qs}` : "/shop";
   };
@@ -85,6 +90,7 @@ export default async function ShopPage({ searchParams }) {
     if (params.sort) usp.set("sort", params.sort);
     if (params.minPrice) usp.set("minPrice", params.minPrice);
     if (params.maxPrice) usp.set("maxPrice", params.maxPrice);
+    if (inStockOnly) usp.set("inStock", "1");
     if (pageNum > 1) usp.set("page", String(pageNum));
     const qs = usp.toString();
     return qs ? `/shop?${qs}` : "/shop";
@@ -97,33 +103,32 @@ export default async function ShopPage({ searchParams }) {
   return (
     <>
       <SiteHeader />
-      <main className="min-h-screen overflow-hidden pb-24 pt-4 sm:pt-10 bg-white text-ink">
-        <section className="relative border-b border-ink/[0.06]">
+      <main className="relative min-h-screen overflow-hidden pb-24 pt-4 sm:pt-10 bg-white text-ink">
 
-          {/* Single, restrained wash instead of scattered glows — reads as clean/professional on white */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_at_top,rgba(202,161,75,0.07),transparent_72%)]" />
+        <section className="relative">
 
-          <div className="relative mx-auto max-w-wrap px-6 py-6 sm:py-10 md:px-12 md:py-14">
-            <nav className="mb-5 flex items-center gap-2 text-sm font-semibold text-ink/50">
+          <div className="relative z-10 mx-auto max-w-wrap px-6 py-6 sm:py-10 md:px-12 md:py-14">
+            <nav className="mb-6 flex items-center gap-2 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-ink/40">
               <Link href="/" className="transition-colors hover:text-gold-600">Home</Link>
-              <span className="text-ink/30">/</span>
+              <span className="text-ink/20">/</span>
               <span className="text-ink">{activeCategoryName || (!params.category && TYPE_LABELS[params.type]) || "Shop"}</span>
             </nav>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="eyebrow text-sm font-bold tracking-[0.32em]">
-                  <span className="gold-line" /> The Collection
-                </p>
-                <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-ink via-ink to-gold-700 mt-4">
-                  {params.search
-                    ? `Results for "${params.search}"`
-                    : activeCategoryName || (!params.category && TYPE_LABELS[params.type]) || "Shop All Products"}
-                </h1>
-                <p className="mt-2 text-sm sm:text-base text-ink/55 font-light">
-                  {products.length} product{products.length === 1 ? "" : "s"}
-                </p>
-              </div>
+            <div>
+              <p className="eyebrow text-xs font-bold tracking-[0.3em] text-gold-600 uppercase">
+                <span className="gold-line" /> The Collection
+              </p>
+              <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-ink mt-4 leading-tight">
+                {params.search
+                  ? `Results for "${params.search}"`
+                  : activeCategoryName || (!params.category && TYPE_LABELS[params.type]) || "Shop All Products"}
+              </h1>
+            </div>
+
+            <div className="mt-8 flex flex-col gap-4 rounded-[1.5rem] border border-gold-400/15 bg-white px-6 py-4 sm:flex-row sm:items-center sm:justify-between shadow-soft">
+              <span className="inline-flex w-fit items-center gap-2 rounded-full border border-gold-400/20 bg-gold-400/5 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-gold-700">
+                {products.length} product{products.length === 1 ? "" : "s"}
+              </span>
               <Suspense fallback={null}>
                 <SortSelect className="hidden w-56 md:block" />
               </Suspense>
@@ -136,13 +141,13 @@ export default async function ShopPage({ searchParams }) {
                     key={chip.key}
                     href={chipHref(chip.key)}
                     scroll={false}
-                    className="flex items-center gap-1.5 rounded-full border border-gold-400/25 bg-gold-400/10 px-3.5 py-1.5 text-sm text-gold-700 transition-colors hover:border-gold-400/50"
+                    className="flex items-center gap-1.5 rounded-full border border-gold-400/20 bg-gold-400/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gold-700 transition-colors hover:border-gold-400/40 hover:bg-gold-400/10"
                   >
                     {chip.label}
                     <X className="h-3 w-3" />
                   </Link>
                 ))}
-                <Link href="/shop" scroll={false} className="text-sm text-ink/45 hover:text-red-500 transition-colors ml-2">
+                <Link href="/shop" scroll={false} className="text-xs font-bold uppercase tracking-wider text-ink/40 hover:text-red-500 transition-colors ml-2">
                   Clear all
                 </Link>
               </div>
@@ -150,7 +155,7 @@ export default async function ShopPage({ searchParams }) {
           </div>
         </section>
 
-        <div className="mx-auto max-w-wrap px-6 pt-10 md:px-12 md:pt-14">
+        <div className="relative mx-auto max-w-wrap border-t border-ink/[0.06] px-6 pt-10 md:px-12 md:pt-14">
           <div className="grid grid-cols-1 items-start gap-12 md:grid-cols-[240px_1fr]">
             <aside className="md:sticky md:top-24 md:self-start">
               <Suspense fallback={null}>
@@ -181,7 +186,7 @@ export default async function ShopPage({ searchParams }) {
 
                   {getPageNumbers(currentPage, totalPages).map((p, i) =>
                     p === "..." ? (
-                      <span key={`ellipsis-${i}`} className="px-1 text-sm text-ink/35">
+                      <span key={`ellipsis-${i}`} className="px-1 text-base text-ink/35">
                         &hellip;
                       </span>
                     ) : (
@@ -189,7 +194,7 @@ export default async function ShopPage({ searchParams }) {
                         key={p}
                         href={pageHref(p)}
                         scroll={false}
-                        className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full border text-sm font-medium transition-all ${
+                        className={`flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-full border text-base font-semibold transition-all ${
                           p === currentPage
                             ? "border-gold-400 bg-gold-400/15 text-gold-700 shadow-gold"
                             : "border-ink/10 text-ink/60 hover:border-gold-400/40 hover:text-ink"
@@ -213,7 +218,7 @@ export default async function ShopPage({ searchParams }) {
                     <ChevronRight className="h-4 w-4" />
                   </Link>
                   </div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-ink/35">
+                  <p className="text-sm font-bold uppercase tracking-wider text-ink/45">
                     Page {currentPage} of {totalPages}
                   </p>
                 </nav>

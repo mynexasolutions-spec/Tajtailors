@@ -4,8 +4,8 @@ import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
 
 const FALLBACK_CATEGORIES = [
-  { id: "cat-fabrics", name: "Fabrics", slug: "fabrics", description: "Premium fabrics sold by the meter.", image_url: null },
-  { id: "cat-kurtas", name: "Ready-Made Kurtas", slug: "ready-made-kurtas", description: "Ready-to-wear kurtas in standard sizes.", image_url: null },
+  { id: "cat-fabrics", name: "Fabrics", slug: "fabrics", description: "Premium fabrics sold by the meter.", image_url: null, variant_label: "Color" },
+  { id: "cat-kurtas", name: "Ready-Made Kurtas", slug: "ready-made-kurtas", description: "Ready-to-wear kurtas in standard sizes.", image_url: null, variant_label: "Size" },
 ];
 
 const getActiveCategoriesCached = unstable_cache(
@@ -14,7 +14,7 @@ const getActiveCategoriesCached = unstable_cache(
       const supabase = createPublicClient();
       const { data } = await supabase
         .from("categories")
-        .select("id, name, slug, description, image_url")
+        .select("id, name, slug, description, image_url, variant_label")
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
 

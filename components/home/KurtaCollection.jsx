@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Heart, Eye } from "lucide-react";
 import Reveal from "@/components/Reveal";
+import { useWishlist } from "@/context/WishlistContext";
+import { useToast } from "@/context/ToastContext";
 
 const SIZES = ["S", "M", "L", "XL", "XXL"];
 
@@ -18,8 +19,29 @@ const FALLBACK_KURTAS = [
 ];
 
 function KurtaCard({ kurta, delay }) {
-  const [liked, setLiked] = useState(false);
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const { showToast } = useToast();
+  const isWishlisted = isInWishlist(kurta.id || kurta.name);
   const href = kurta.slug ? `/shop/${kurta.slug}` : "/shop";
+
+  const handleWishlistToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleWishlist({
+      id: kurta.id || kurta.name,
+      name: kurta.name,
+      price: kurta.price,
+      image: kurta.image,
+      slug: kurta.slug || "shop",
+      productType: "kurta",
+      inStock: kurta.inStock !== undefined ? kurta.inStock : true,
+    });
+    showToast(
+      isWishlisted
+        ? `${kurta.name} removed from wishlist.`
+        : `${kurta.name} added to wishlist.`
+    );
+  };
 
   return (
     <Reveal delay={delay}>
@@ -48,15 +70,12 @@ function KurtaCard({ kurta, delay }) {
             </span>
           </div>
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setLiked((l) => !l);
-            }}
-            aria-label="Add to wishlist"
+            type="button"
+            onClick={handleWishlistToggle}
+            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
             className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm transition-all hover:scale-110"
           >
-            <Heart className={`h-4 w-4 transition-colors ${liked ? "fill-gold-300 text-gold-300" : "text-white"}`} />
+            <Heart className={`h-4 w-4 transition-colors ${isWishlisted ? "fill-red-500 text-red-500" : "text-white"}`} />
           </button>
         </div>
         <div className="flex flex-1 flex-col p-3.5 sm:p-4">
@@ -81,7 +100,7 @@ function KurtaCard({ kurta, delay }) {
 export default function KurtaCollection({ kurtas = [], eyebrow = "Ready When You Are", heading = "Ready-Made Kurta Collection" }) {
   const items = kurtas.length > 0 ? kurtas : FALLBACK_KURTAS;
   return (
-    <section className="relative bg-ivory-deep py-16 sm:py-24">
+    <section className="relative bg-white py-16 sm:py-24">
       <div className="mx-auto max-w-wrap px-4 sm:px-6 md:px-12">
         <Reveal className="mb-10 flex flex-col items-start justify-between gap-4 sm:mb-14 sm:flex-row sm:items-end">
           <div>

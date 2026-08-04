@@ -65,10 +65,10 @@ export default function ContactContent() {
 
       {/* Main Grid Section */}
       <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12 items-start">
-        
+
         {/* Left Column: Direct Channels & Information */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6 lg:col-span-5">
-          
+
           {/* Email Card */}
           <Reveal delay={80} className="h-full">
             <div className="group relative overflow-hidden rounded-[2rem] border border-gold-400/10 bg-white p-6 shadow-soft transition-all duration-500 hover:border-gold-400/35 hover:shadow-[0_0_30px_rgba(212,163,89,0.06)] hover:-translate-y-1 h-full flex flex-col justify-between">
@@ -89,16 +89,16 @@ export default function ContactContent() {
                 <button
                   onClick={handleCopyEmail}
                   title="Copy Email"
-                  className="rounded-xl border border-ink/10 bg-ivory-deep p-2.5 text-ink/60 hover:border-gold-400/40 hover:text-gold-700 transition-all shrink-0"
+                  className="rounded-xl border border-ink/10 bg-white p-2.5 text-ink/60 hover:border-gold-400/40 hover:text-gold-700 transition-all shrink-0"
                 >
                   {copiedEmail ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
                 </button>
               </div>
               <div className="mt-6 flex items-center justify-between border-t border-ink/10 pt-4 text-sm text-ink/50">
-                <span>For questions & support</span>
+                <span className="font-semibold">For questions & support</span>
                 <a
                   href={`mailto:${BRAND.email}`}
-                  className="inline-flex items-center gap-1 text-gold-600 hover:text-gold-700 font-medium"
+                  className="inline-flex items-center gap-1 text-gold-600 hover:text-gold-700 font-semibold"
                 >
                   Send email <ArrowUpRight className="h-3 w-3" />
                 </a>
@@ -133,8 +133,8 @@ export default function ContactContent() {
                 </span>
               </div>
               <div className="mt-6 flex items-center justify-between border-t border-ink/10 pt-4 text-sm text-ink/50">
-                <span>Quick help & chat</span>
-                <span className="text-emerald-600 font-medium group-hover:underline">Chat now &rarr;</span>
+                <span className="font-semibold">Quick help & chat</span>
+                <span className="text-emerald-600 font-semibold group-hover:underline">Chat now &rarr;</span>
               </div>
             </a>
           </Reveal>
@@ -150,7 +150,7 @@ export default function ContactContent() {
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-ink/45">
                     Support Hours
                   </span>
-                  <p className="font-display mt-0.5 text-base text-ink">Mon – Sat, 10 AM – 7 PM IST</p>
+                  <p className="font-display mt-0.5 text-base text-ink font-semibold">Mon – Sat, 10 AM – 7 PM IST</p>
                 </div>
               </div>
               <p className="mt-4 text-base sm:text-lg leading-relaxed text-ink/60 font-semibold">
@@ -169,7 +169,7 @@ export default function ContactContent() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-ink/10 text-ink/60 transition-all hover:-translate-y-0.5 hover:border-gold-400 hover:text-gold-600 bg-ivory-deep"
+                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-ink/10 text-ink/60 transition-all hover:-translate-y-0.5 hover:border-gold-400 hover:text-gold-600 bg-white"
                 >
                   <Instagram className="h-4.5 w-4.5" />
                 </a>
@@ -178,7 +178,7 @@ export default function ContactContent() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Facebook"
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-ink/10 text-ink/60 transition-all hover:-translate-y-0.5 hover:border-gold-400 hover:text-gold-600 bg-ivory-deep"
+                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-ink/10 text-ink/60 transition-all hover:-translate-y-0.5 hover:border-gold-400 hover:text-gold-600 bg-white"
                 >
                   <Facebook className="h-4.5 w-4.5" />
                 </a>
@@ -187,7 +187,7 @@ export default function ContactContent() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="YouTube"
-                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-ink/10 text-ink/60 transition-all hover:-translate-y-0.5 hover:border-gold-400 hover:text-gold-600 bg-ivory-deep"
+                  className="flex h-11 w-11 items-center justify-center rounded-2xl border border-ink/10 text-ink/60 transition-all hover:-translate-y-0.5 hover:border-gold-400 hover:text-gold-600 bg-white"
                 >
                   <Youtube className="h-4.5 w-4.5" />
                 </a>
@@ -228,13 +228,12 @@ export default function ContactContent() {
                 >
                   <button
                     onClick={() => setOpenFaq(isOpen ? null : idx)}
-                    className="flex w-full items-center justify-between p-6 text-left transition-colors hover:bg-ivory-deep"
+                    className="flex w-full items-center justify-between p-6 text-left transition-colors hover:bg-gold-50/10"
                   >
-                    <span className="font-display text-base sm:text-lg text-ink font-medium pr-4">{faq.q}</span>
+                    <span className="font-display text-base sm:text-lg text-ink font-semibold pr-4">{faq.q}</span>
                     <ChevronDown
-                      className={`h-4.5 w-4.5 shrink-0 text-gold-600 transition-transform duration-300 ${
-                        isOpen ? "rotate-180 text-gold-700" : ""
-                      }`}
+                      className={`h-4.5 w-4.5 shrink-0 text-gold-600 transition-transform duration-300 ${isOpen ? "rotate-180 text-gold-700" : ""
+                        }`}
                     />
                   </button>
                   {isOpen && (

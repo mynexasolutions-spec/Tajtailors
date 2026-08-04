@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 
 const LISTING_SELECT = `
   id, name, slug, badge, product_type, fabric_type, color, average_rating, review_count,
-  featured_image_url, category_id, is_featured, short_description,
+  featured_image_url, category_id, is_featured, short_description, garment_type,
   product_images ( image_url, sort_order, variant_name ),
   product_variants ( id, variant_name, price, original_price, stock_quantity, is_active, color_hex )
 `;
@@ -27,6 +27,7 @@ function withDisplayPrice(product) {
     shortDescription: product.short_description,
     productType: product.product_type,
     fabricType: product.fabric_type,
+    garmentType: product.garment_type,
     color: product.color,
     rating: product.average_rating,
     reviewCount: product.review_count,
@@ -49,7 +50,10 @@ export async function getProducts(filters = {}) {
     if (filters.productType) query = query.eq("product_type", filters.productType);
     if (filters.fabricType) query = query.eq("fabric_type", filters.fabricType);
     if (filters.badgeContains) query = query.ilike("badge", `%${filters.badgeContains}%`);
-    if (filters.search) query = query.ilike("name", `%${filters.search}%`);
+    if (filters.search) {
+      const s = filters.search.trim();
+      query = query.or(`name.ilike.%${s}%,short_description.ilike.%${s}%,fabric_type.ilike.%${s}%,color.ilike.%${s}%`);
+    }
 
     query = query.order("is_featured", { ascending: false }).order("created_at", { ascending: false });
     if (filters.limit) query = query.limit(filters.limit);
@@ -140,7 +144,7 @@ export async function getProductBySlug(slug) {
     const { data: product, error } = await supabase
       .from("products")
       .select(`
-        id, name, slug, category_id, is_active, badge, product_type, fabric_type, color,
+        id, name, slug, category_id, is_active, badge, product_type, fabric_type, fabric_type_description, color, color_description,
         average_rating, review_count, short_description, description, featured_image_url,
         fabric_meters_required, garment_type,
         product_images ( id, image_url, sort_order, variant_name ),
@@ -158,7 +162,7 @@ export async function getProductBySlug(slug) {
     if (product && product.is_active) {
       const [categoryResult, reviewsResult, userResult] = await Promise.all([
         product.category_id
-          ? supabase.from("categories").select("name").eq("id", product.category_id).maybeSingle()
+          ? supabase.from("categories").select("name, variant_label").eq("id", product.category_id).maybeSingle()
           : Promise.resolve({ data: null }),
         supabase
           .from("reviews")
@@ -170,6 +174,7 @@ export async function getProductBySlug(slug) {
       ]);
 
       const categoryName = categoryResult.data?.name || null;
+      const variantLabel = categoryResult.data?.variant_label || "Variant";
       const reviews = reviewsResult.data;
 
       // A logged-in user's own review for this product (approved or still
@@ -203,6 +208,7 @@ export async function getProductBySlug(slug) {
       return {
         ...product,
         categoryName,
+        variantLabel,
         images,
         faqs,
         variants,
@@ -294,6 +300,56 @@ export async function getCompatibleFabrics(outfitProductId) {
       .filter((p) => p.variants.length > 0);
   } catch (err) {
     console.error("Fetch compatible fabrics error:", err);
+    return [];
+  }
+}
+
+// Admin-managed extra work add-ons (Karigari, Zari Buttons...) with their
+// own admin-set price — only the ones the admin mapped to this specific
+// outfit product show up, same pattern as compatible fabrics.
+export async function getExtraWorkOptions(productId) {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("product_extra_work_links")
+      .select("extra_work_option:extra_work_options ( id, label, price, is_active, sort_order )")
+      .eq("product_id", productId);
+
+    if (error) {
+      console.error("Fetch extra work options error:", error);
+      return [];
+    }
+
+    return (data || [])
+      .map((row) => row.extra_work_option)
+      .filter((o) => o && o.is_active)
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map(({ id, label, price }) => ({ id, label, price }));
+  } catch (err) {
+    console.error("Fetch extra work options error:", err);
+    return [];
+  }
+}
+
+// Admin-managed garment families (Kurta, Pajama, Trouser, custom ones...) —
+// lets the outfit configurator resolve a product's garment_type to a display
+// label and a measurement field set without hardcoding either in code.
+export async function getGarmentTypes() {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("garment_types")
+      .select("key, label, measurement_kind, image_url, style_options, fields")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
+
+    if (error) {
+      console.error("Fetch garment types error:", error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.error("Fetch garment types error:", err);
     return [];
   }
 }

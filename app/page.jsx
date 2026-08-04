@@ -8,16 +8,18 @@ import KurtaCollection from "@/components/home/KurtaCollection";
 import FeaturedSpotlight from "@/components/home/FeaturedSpotlight";
 import TrustBar from "@/components/home/TrustBar";
 import MarqueeStrip from "@/components/home/MarqueeStrip";
-import { getActiveHeroSlides } from "@/actions/site";
+import TestimonialSection from "@/components/about/TestimonialSection";
+import { getActiveHeroSlides, getActiveTestimonials } from "@/actions/site";
 import { getProducts, getFeaturedProducts } from "@/actions/products";
 import { getSiteSettings } from "@/actions/settings";
 
 export default async function HomePage() {
-  const [heroSlides, fabrics, kurtas, featuredProducts, settings] = await Promise.all([
+  const [heroSlides, fabrics, kurtas, featuredProducts, testimonials, settings] = await Promise.all([
     getActiveHeroSlides(),
     getProducts({ productType: "fabric", limit: 6 }),
     getProducts({ productType: "kurta", limit: 6 }),
     getFeaturedProducts(1),
+    getActiveTestimonials(),
     getSiteSettings(),
   ]);
   const spotlightProduct = featuredProducts[0] || null;
@@ -67,6 +69,14 @@ export default async function HomePage() {
 
         {isOn("home_spotlight_enabled") && (
           <FeaturedSpotlight product={spotlightProduct} eyebrow={val("home_spotlight_eyebrow") || "Signature Piece"} />
+        )}
+
+        {isOn("home_testimonials_enabled") && (
+          <TestimonialSection
+            testimonials={testimonials}
+            eyebrow={val("home_testimonials_eyebrow") || undefined}
+            heading={val("home_testimonials_heading") || undefined}
+          />
         )}
 
         {isOn("home_trustbar_enabled") && (

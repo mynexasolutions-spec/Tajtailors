@@ -51,7 +51,7 @@ export default function ReviewForm({ productId, existingReview }) {
         <p className="font-display text-lg text-ink">Your Review</p>
         <StarRating rating={existingReview.rating} size={16} />
         {existingReview.review_text && (
-          <p className="text-base text-ink/70 font-light leading-relaxed">&ldquo;{existingReview.review_text}&rdquo;</p>
+          <p className="text-lg text-ink/80 font-semibold leading-relaxed">&ldquo;{existingReview.review_text}&rdquo;</p>
         )}
         {!existingReview.is_approved && (
           <p className="text-sm text-ink/45">Pending approval — it will appear publicly once our team reviews it.</p>
@@ -87,7 +87,7 @@ export default function ReviewForm({ productId, existingReview }) {
         rows={3}
         maxLength={800}
         placeholder="How was your experience with this product?"
-        className="w-full rounded-xl border border-ink/10 bg-ivory-deep px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-gold-400/50 focus:outline-none"
+        className="w-full rounded-xl border border-ink/10 bg-white px-4 py-3 text-base text-ink placeholder:text-ink/35 focus:border-gold-400/50 focus:outline-none"
       />
       <button type="submit" disabled={pending} className="btn-gold disabled:opacity-60">
         {pending ? "Submitting…" : "Submit Review"}

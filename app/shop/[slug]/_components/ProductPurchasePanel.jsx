@@ -7,71 +7,71 @@ import { Minus, Plus, ShoppingBag, MessageSquare, Check, Zap, Ruler, Shirt, Arro
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
 import { whatsappLink } from "@/lib/constants";
+import FlowStepper from "@/components/shop/FlowStepper";
 import { useProductVariant } from "./ProductVariantContext";
 
 const inputClass =
   "w-full rounded-xl border border-ink/10 bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink/30 focus:border-gold-400/40 focus:outline-none";
 
-const KURTA_STYLES = [
-  { key: "pathani", label: "Pathani Kurta" },
-  { key: "plain", label: "Plain Kurta" },
-  { key: "plain_half_placket", label: "Plain Half-Placket Kurta" },
-  { key: "jawahar_cut", label: "Jawahar Cut" },
-  { key: "shirt", label: "Shirt Style" },
-];
-const KURTA_MEASUREMENT_FIELDS = [
-  { key: "length", label: "Length" },
-  { key: "collar", label: "Collar" },
-  { key: "sleeve", label: "Sleeve" },
-  { key: "chest", label: "Chest" },
-  { key: "waist", label: "Waist" },
-];
 const YES_NO_OPTIONS = [
   { key: "yes", label: "Yes" },
   { key: "no", label: "No" },
 ];
 
-const PAJAMA_STYLES = [
-  { key: "pant_cut", label: "Pant-Cut" },
-  { key: "choodidar", label: "Choodidar" },
-  { key: "mughlai_shalwar", label: "Mughlai Shalwar" },
-  { key: "nadawar", label: "Nada-vaar (Drawstring)" },
-];
-const PAJAMA_FIT_STYLES = ["pant_cut", "choodidar"];
-const PAJAMA_FIT_OPTIONS = [
-  { key: "straight", label: "Straight" },
-  { key: "not_straight", label: "Not Straight" },
-];
-const PAJAMA_MEASUREMENT_FIELDS = [
-  { key: "length", label: "Length" },
-  { key: "mori", label: "Mori" },
-  { key: "hip", label: "Hip" },
-];
+// For kids' garments an exact inch measurement is rarely known — picking an
+// age is faster and close enough for the tailor to size against.
+const AGE_OPTIONS = Array.from({ length: 10 }, (_, i) => {
+  const age = i + 1;
+  return { key: String(age), label: `${age} Year${age === 1 ? "" : "s"}` };
+});
 
-const PANT_MEASUREMENT_FIELDS = [
-  { key: "length", label: "Length" },
-  { key: "waist", label: "Waist" },
-  { key: "hip", label: "Hip" },
-  { key: "mori", label: "Mori" },
-];
+// Groups an outfit's own name label under its garment_type — lets multiple
+// products of the same garment family (e.g. "Kurta" and "Half Kurta") show
+// as one category with a type picker instead of separate flat pills. Labels
+// come from the admin-managed garment_types table (garmentTypesByKey), not a
+// hardcoded list, so new garment families need no code change.
+function groupOutfitsByGarmentType(outfits, garmentTypesByKey) {
+  const groups = [];
+  const byKey = new Map();
+  outfits.forEach((o) => {
+    const key = o.garmentType || o.name;
+    let group = byKey.get(key);
+    if (!group) {
+      group = { key, label: garmentTypesByKey.get(o.garmentType)?.label || o.name, items: [] };
+      byKey.set(key, group);
+      groups.push(group);
+    }
+    group.items.push(o);
+  });
+  return groups;
+}
 
-const EXTRA_WORK_OPTIONS = [
-  { key: "karigari", label: "Karigari / Embroidery Work" },
-  { key: "zari_buttons", label: "Zari Buttons" },
-];
+// Which measurement section(s) a product's garment_type renders, and where
+// each section's field/style config comes from. "Set" kinds (Kurta+Pajama,
+// Kurta+Pant) combine the two canonical component types; every other kind
+// (kurta/pajama/pant/custom) is just its own garment_type's own config —
+// this is what lets an admin-defined type (e.g. "Sherwani") work with zero
+// code changes: its own style_options/fields are used directly.
+function getMeasurementSections(garmentType, garmentTypesByKey) {
+  const ownType = garmentTypesByKey.get(garmentType);
+  const kind = ownType?.measurement_kind || garmentType;
 
-// Which garment sections a product's garment_type turns on.
-function garmentSections(garmentType) {
-  return {
-    showKurta: garmentType === "kurta" || garmentType === "kurta_pajama_set" || garmentType === "kurta_pant_set",
-    showPajama: garmentType === "pajama" || garmentType === "kurta_pajama_set",
-    showPant: garmentType === "pant" || garmentType === "kurta_pant_set",
-  };
+  if (kind === "kurta_pajama_set") {
+    const kurta = garmentTypesByKey.get("kurta");
+    const pajama = garmentTypesByKey.get("pajama");
+    return [kurta && { key: "kurta", type: kurta }, pajama && { key: "pajama", type: pajama }].filter(Boolean);
+  }
+  if (kind === "kurta_pant_set") {
+    const kurta = garmentTypesByKey.get("kurta");
+    const pant = garmentTypesByKey.get("pant");
+    return [kurta && { key: "kurta", type: kurta }, pant && { key: "pant", type: pant }].filter(Boolean);
+  }
+  return ownType ? [{ key: garmentType, type: ownType }] : [];
 }
 
 function pillClass(active) {
-  return `flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm transition-all ${
-    active ? "border-gold-400 bg-gold-400/10 text-gold-700" : "border-ink/10 text-ink/55 hover:border-gold-400/30"
+  return `flex items-center gap-1.5 rounded-xl border px-4 py-2.5 text-sm font-bold transition-all ${
+    active ? "border-gold-400 bg-gold-400/10 text-gold-700" : "border-ink/15 text-ink/70 hover:border-gold-400/30"
   }`;
 }
 
@@ -93,7 +93,7 @@ function MeasurementGrid({ fields, values, onChange }) {
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
       {fields.map((f) => (
         <div key={f.key}>
-          <label className="mb-1 block text-[11px] uppercase tracking-wide text-ink/45">{f.label} (in)</label>
+          <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink/60">{f.label} (in)</label>
           <input
             type="number"
             step="0.5"
@@ -107,9 +107,66 @@ function MeasurementGrid({ fields, values, onChange }) {
   );
 }
 
+// Renders one garment_type's config (style pills + measurement fields) —
+// entirely DB-driven, so admin edits to a garment type's fields show up here
+// with no code change. `values` is the plain {style, ...fieldKey} state for
+// this section; `onChange` receives a partial patch to merge in.
+function GarmentSection({ title, config, values, onChange }) {
+  const fields = config?.fields || [];
+  const ageField = fields.find((f) => f.type === "age");
+  const regularFields = fields.filter((f) => f.type !== "age");
+  const numberFields = regularFields.filter((f) => f.type === "number" || !f.type);
+  const otherFields = regularFields.filter((f) => f.type === "yes_no" || f.type === "select");
+  const forChild = Boolean(values._forChild);
+
+  return (
+    <div className="space-y-3 rounded-xl border border-ink/10 bg-white p-4">
+      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold-600">{title}</p>
+
+      {ageField && (
+        <label className="flex w-fit cursor-pointer items-center gap-2 text-xs font-bold text-ink/60">
+          <input
+            type="checkbox"
+            checked={forChild}
+            onChange={(e) => onChange({ _forChild: e.target.checked })}
+            className="h-4 w-4 accent-gold-500"
+          />
+          This is for a child
+        </label>
+      )}
+
+      {ageField && forChild ? (
+        <div>
+          <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink/60">Child's Age</label>
+          <PillGroup options={AGE_OPTIONS} value={values.age} onChange={(age) => onChange({ age })} />
+        </div>
+      ) : (
+        <>
+          {numberFields.length > 0 && (
+            <MeasurementGrid fields={numberFields} values={values} onChange={(key, val) => onChange({ [key]: val })} />
+          )}
+          {otherFields.map((f) => (
+            <div key={f.key}>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink/60">{f.label}</label>
+              <PillGroup
+                options={f.type === "yes_no" ? YES_NO_OPTIONS : f.options || []}
+                value={values[f.key]}
+                onChange={(val) => onChange({ [f.key]: val })}
+              />
+            </div>
+          ))}
+          {regularFields.length === 0 && (
+            <p className="text-sm font-semibold text-ink/45">No fields configured for this type yet.</p>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function StepHeading({ number, icon: Icon, children }) {
   return (
-    <p className="mb-3 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-gold-600">
+    <p className="mb-3 flex items-center gap-2.5 text-xs font-bold uppercase tracking-[0.2em] text-gold-600">
       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold-gradient text-[11px] font-bold text-ink">
         {number}
       </span>
@@ -121,26 +178,22 @@ function StepHeading({ number, icon: Icon, children }) {
 
 function MeasurementsStep({
   step,
-  garmentType,
+  sections,
+  sectionsData,
+  updateSection,
   measurementType,
   setMeasurementType,
-  kurta,
-  setKurta,
-  pajama,
-  setPajama,
-  pant,
-  setPant,
+  extraWorkOptions,
   extraWork,
   setExtraWork,
   notes,
   setNotes,
 }) {
-  const { showKurta, showPajama, showPant } = garmentSections(garmentType);
   const toggleExtraWork = (key) =>
     setExtraWork((list) => (list.includes(key) ? list.filter((k) => k !== key) : [...list, key]));
 
   return (
-    <div className="space-y-4 rounded-2xl border border-ink/10 bg-ivory-deep p-5">
+    <div className="space-y-4 rounded-2xl border border-gold-400/15 bg-white p-5 shadow-soft">
       <StepHeading number={step} icon={Ruler}>Measurements</StepHeading>
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -154,66 +207,51 @@ function MeasurementsStep({
 
       {measurementType === "manual" ? (
         <div className="space-y-4">
-          {showKurta && (
-            <div className="space-y-3 rounded-xl border border-ink/10 bg-white p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600">Kurta</p>
-              <PillGroup options={KURTA_STYLES} value={kurta.style} onChange={(style) => setKurta((k) => ({ ...k, style }))} />
-              <MeasurementGrid fields={KURTA_MEASUREMENT_FIELDS} values={kurta} onChange={(key, val) => setKurta((k) => ({ ...k, [key]: val }))} />
-              <div>
-                <label className="mb-1 block text-[11px] uppercase tracking-wide text-ink/45">Front Placket</label>
-                <PillGroup options={YES_NO_OPTIONS} value={kurta.frontPlacket} onChange={(frontPlacket) => setKurta((k) => ({ ...k, frontPlacket }))} />
-              </div>
-            </div>
-          )}
+          {sections.map((s) => (
+            <GarmentSection
+              key={s.key}
+              title={s.type.label}
+              config={s.type}
+              values={sectionsData[s.key] || {}}
+              onChange={(patch) => updateSection(s.key, patch)}
+            />
+          ))}
 
-          {showPajama && (
-            <div className="space-y-3 rounded-xl border border-ink/10 bg-white p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600">Pajama</p>
-              <PillGroup options={PAJAMA_STYLES} value={pajama.style} onChange={(style) => setPajama((p) => ({ ...p, style }))} />
-              {PAJAMA_FIT_STYLES.includes(pajama.style) && (
-                <div>
-                  <label className="mb-1 block text-[11px] uppercase tracking-wide text-ink/45">Fit</label>
-                  <PillGroup options={PAJAMA_FIT_OPTIONS} value={pajama.fit} onChange={(fit) => setPajama((p) => ({ ...p, fit }))} />
-                </div>
-              )}
-              <MeasurementGrid fields={PAJAMA_MEASUREMENT_FIELDS} values={pajama} onChange={(key, val) => setPajama((p) => ({ ...p, [key]: val }))} />
-            </div>
-          )}
-
-          {showPant && (
-            <div className="space-y-3 rounded-xl border border-ink/10 bg-white p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600">Pant</p>
-              <MeasurementGrid fields={PANT_MEASUREMENT_FIELDS} values={pant} onChange={(key, val) => setPant((p) => ({ ...p, [key]: val }))} />
-            </div>
-          )}
-
-          {!showKurta && !showPajama && !showPant && (
-            <p className="text-sm text-ink/45">
+          {sections.length === 0 && (
+            <p className="text-sm font-semibold text-ink/55">
               This outfit doesn't have measurement fields configured yet — message us on WhatsApp with your measurements.
             </p>
           )}
         </div>
       ) : (
-        <p className="text-sm leading-relaxed text-ink/50">
+        <p className="text-sm font-semibold leading-relaxed text-ink/60">
           No problem — just include a well-fitting old garment in the package our courier picks up, and our tailor will copy the sizing from it.
         </p>
       )}
 
-      <div className="space-y-3 rounded-xl border border-ink/10 bg-white p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600">Extra Work</p>
-        <div className="flex flex-wrap gap-2">
-          {EXTRA_WORK_OPTIONS.map((o) => (
-            <button key={o.key} type="button" onClick={() => toggleExtraWork(o.key)} className={pillClass(extraWork.includes(o.key))}>
-              {extraWork.includes(o.key) && <Check className="h-3.5 w-3.5" />}
-              {o.label}
-            </button>
-          ))}
+      {extraWorkOptions.length > 0 && (
+        <div className="space-y-3 rounded-xl border border-ink/10 bg-white p-4">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold-600">Extra Work</p>
+          <div className="flex flex-wrap gap-2">
+            {extraWorkOptions.map((o) => (
+              <button
+                key={o.id}
+                type="button"
+                onClick={() => toggleExtraWork(o.id)}
+                className={pillClass(extraWork.includes(o.id))}
+              >
+                {extraWork.includes(o.id) && <Check className="h-3.5 w-3.5" />}
+                {o.label}
+                {o.price > 0 && <span className="opacity-70">+₹{o.price.toLocaleString("en-IN")}</span>}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs font-bold text-ink/55">Selected extra work is added to your total below.</p>
         </div>
-        <p className="text-xs text-ink/40">Price for these is confirmed by our tailor before stitching begins.</p>
-      </div>
+      )}
 
       <div>
-        <label className="mb-1 block text-[11px] uppercase tracking-wide text-ink/45">Description (optional)</label>
+        <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink/60">Description (optional)</label>
         <textarea
           rows={2}
           value={notes}
@@ -226,7 +264,7 @@ function MeasurementsStep({
   );
 }
 
-function OutfitConfigurator({ product, variants, compatibleFabrics }) {
+function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypesByKey, extraWorkOptions }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToCart, setDrawerOpen } = useCart();
@@ -244,14 +282,20 @@ function OutfitConfigurator({ product, variants, compatibleFabrics }) {
 
   const [selectedFabricId, setSelectedFabricId] = useState(preselectedFabric?.id || null);
   const [ownFabric, setOwnFabric] = useState(false);
+  // Arriving with a fabric already picked (from the fabric page's "What Can
+  // Be Made" flow) shouldn't ask the customer to choose it again — show a
+  // compact confirmation instead of the full picker, expandable via "Change".
+  const [showFabricPicker, setShowFabricPicker] = useState(!preselectedFabric);
   const [measurementType, setMeasurementType] = useState("manual");
   const [selectedVariantId, setSelectedVariantId] = useState(preselectedVariant?.id || null);
-  const [kurta, setKurta] = useState({});
-  const [pajama, setPajama] = useState({});
-  const [pant, setPant] = useState({});
+  // Per-section measurement state, keyed by section key ("kurta"/"pajama"/
+  // "pant", or a custom garment type's own key) — generic so a new
+  // admin-defined garment type works with no code change.
+  const [sectionsData, setSectionsData] = useState({});
+  const updateSection = (key, patch) => setSectionsData((prev) => ({ ...prev, [key]: { ...prev[key], ...patch } }));
   const [extraWork, setExtraWork] = useState([]);
   const [notes, setNotes] = useState("");
-  const { showKurta, showPajama, showPant } = garmentSections(product.garment_type);
+  const measurementSections = getMeasurementSections(product.garment_type, garmentTypesByKey);
   // Editable meters — the standard amount is a starting point, but cutting
   // style/body size can need more, so the customer can bump it up themselves
   // and pay for the extra instead of needing a call to sort it out later.
@@ -270,7 +314,9 @@ function OutfitConfigurator({ product, variants, compatibleFabrics }) {
     ? selectedFabric.variants.find((v) => v.id === selectedVariantId) || selectedFabric.variants[0]
     : null;
   const fabricCost = selectedVariant ? selectedVariant.price * customMeters : 0;
-  const totalPrice = stitchingVariant.price + fabricCost;
+  const selectedExtraWork = extraWorkOptions.filter((o) => extraWork.includes(o.id));
+  const extraWorkCost = selectedExtraWork.reduce((sum, o) => sum + Number(o.price || 0), 0);
+  const totalPrice = stitchingVariant.price + fabricCost + extraWorkCost;
   const fabricChosen = ownFabric || Boolean(selectedVariant);
 
   const chooseFabric = (id) => {
@@ -278,12 +324,14 @@ function OutfitConfigurator({ product, variants, compatibleFabrics }) {
     setSelectedVariantId(compatibleFabrics.find((f) => f.id === id)?.variants[0]?.id || null);
     setOwnFabric(false);
     setCustomMeters(meters);
+    setShowFabricPicker(false);
   };
   const chooseOwnFabric = () => {
     setSelectedFabricId(null);
     setSelectedVariantId(null);
     setOwnFabric(true);
     setCustomMeters(meters);
+    setShowFabricPicker(false);
   };
 
   const fabricDisplayName =
@@ -311,10 +359,13 @@ function OutfitConfigurator({ product, variants, compatibleFabrics }) {
     measurementType,
     measurements: {
       garmentType: product.garment_type || null,
-      ...(measurementType === "manual" && showKurta ? { kurta } : {}),
-      ...(measurementType === "manual" && showPajama ? { pajama } : {}),
-      ...(measurementType === "manual" && showPant ? { pant } : {}),
-      extraWork,
+      ...(measurementType === "manual"
+        ? Object.fromEntries(measurementSections.map((s) => [s.key, sectionsData[s.key] || {}]))
+        : {}),
+      // Snapshot label + price at order time, not just the option id — admin
+      // can rename/reprice/delete extra work options later without corrupting
+      // what past orders actually show and charged.
+      extraWork: selectedExtraWork.map((o) => ({ label: o.label, price: o.price })),
     },
     notes: notes || null,
   });
@@ -335,65 +386,148 @@ function OutfitConfigurator({ product, variants, compatibleFabrics }) {
 
   return (
     <div className="space-y-6 sm:space-y-8">
+      <FlowStepper current={fabricChosen ? "measure" : "fabric"} />
+
       {/* Price block */}
       <div className="flex flex-wrap items-baseline gap-3">
         <span className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-600 via-gold-500 to-gold-700">
           ₹{totalPrice.toLocaleString("en-IN")}
         </span>
-        <span className="text-sm text-ink/45">
+        <span className="text-sm sm:text-base font-bold text-ink/60">
           ₹{stitchingVariant.price.toLocaleString("en-IN")} stitching
           {Boolean(selectedVariant) && ` + fabric (${customMeters}m)`}
+          {extraWorkCost > 0 && ` + extra work`}
         </span>
       </div>
 
       {/* Step 1: Fabric choice — grid + own-fabric option, plus (once a catalog
           fabric is picked) its color and meters-needed, all grouped in one card
           so the whole "what fabric am I getting" decision reads as one step */}
-      <div className="space-y-4 rounded-2xl border border-ink/10 bg-ivory-deep p-5">
-        <StepHeading number={1} icon={Shirt}>Choose Your Fabric</StepHeading>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {compatibleFabrics.map((f) => {
-            const cardVariant = f.id === selectedFabricId && selectedVariant ? selectedVariant : f.variants[0];
-            return (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => chooseFabric(f.id)}
-                className={`flex flex-col overflow-hidden rounded-xl border bg-white text-left transition-all ${
-                  selectedFabricId === f.id ? "border-gold-400 shadow-gold" : "border-ink/10 hover:border-gold-400/30"
-                }`}
-              >
-                <div className="relative aspect-square w-full bg-ivory-deep">
-                  {cardVariant.image && <Image src={cardVariant.image} alt={f.name} fill sizes="120px" className="object-cover" />}
-                  {selectedFabricId === f.id && (
-                    <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gold-gradient text-ink">
-                      <Check className="h-3 w-3" />
-                    </span>
-                  )}
-                </div>
-                <div className="p-2">
-                  <p className="truncate text-xs font-medium text-ink">{f.name}</p>
-                  <p className="text-[11px] text-gold-600">
-                    {f.variants.length > 1 ? "From " : ""}₹{f.variants[0].price}/m
-                  </p>
-                </div>
-              </button>
-            );
-          })}
+      <div className="space-y-4 rounded-2xl border border-gold-400/15 bg-white p-5 shadow-soft">
+        <div>
+          <StepHeading number={1} icon={Shirt}>Choose Your Fabric</StepHeading>
+          {showFabricPicker && (
+            <p className="-mt-1.5 pl-[1.875rem] text-sm font-bold text-ink/60">
+              {compatibleFabrics.length > 0
+                ? `${compatibleFabrics.length} fabric${compatibleFabrics.length === 1 ? "" : "s"} available, or send your own`
+                : "Send your own fabric for this stitching order"}
+            </p>
+          )}
+        </div>
 
+        {/* Fabric already chosen (arrived from the fabric page) — show a
+            compact confirmation instead of re-asking the customer to pick. */}
+        {!showFabricPicker && fabricChosen && (
           <button
             type="button"
-            onClick={chooseOwnFabric}
-            className={`flex flex-col items-center justify-center gap-1.5 rounded-xl border bg-white p-3 text-center transition-all ${
-              ownFabric ? "border-gold-400 bg-gold-400/10 text-gold-700 shadow-gold" : "border-dashed border-ink/10 text-ink/55 hover:border-gold-400/30"
-            }`}
+            onClick={() => setShowFabricPicker(true)}
+            className="group flex w-full items-center gap-3.5 rounded-2xl border border-gold-400/30 bg-white p-3.5 text-left shadow-soft transition-all duration-300 hover:border-gold-400/50 hover:shadow-gold"
           >
-            <PackageCheck className="h-5 w-5" />
-            <span className="text-xs font-medium leading-snug">I'll Send My Own Fabric</span>
+            <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white border border-ink/10">
+              {selectedVariant?.image ? (
+                <Image src={selectedVariant.image} alt="" fill sizes="56px" className="object-cover" />
+              ) : (
+                <PackageCheck className="h-6 w-6 text-gold-600" />
+              )}
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-gold-gradient text-ink shadow-gold">
+                <Check className="h-3 w-3" strokeWidth={2.75} />
+              </span>
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[10px] font-bold uppercase tracking-widest text-gold-600">Fabric Selected</span>
+              <span className="block truncate text-base font-bold text-ink">{fabricDisplayName}</span>
+            </span>
+            <span className="shrink-0 text-xs font-bold uppercase tracking-widest text-gold-600 group-hover:underline">Change</span>
           </button>
-        </div>
-        {compatibleFabrics.length === 0 && (
-          <p className="mt-2 text-sm text-ink/45">No catalog fabrics mapped to this outfit yet — you can still send your own.</p>
+        )}
+
+        {showFabricPicker && compatibleFabrics.length > 0 && (
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+            {compatibleFabrics.map((f, i) => {
+              const cardVariant = f.id === selectedFabricId && selectedVariant ? selectedVariant : f.variants[0];
+              const isSelected = selectedFabricId === f.id;
+              return (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => chooseFabric(f.id)}
+                  className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white text-left shadow-soft transition-all duration-500 animate-fadeUp opacity-0 ${
+                    isSelected
+                      ? "border-gold-400 shadow-gold ring-2 ring-gold-400/30"
+                      : "border-ink/10 hover:-translate-y-1 hover:border-gold-400/40 hover:shadow-gold"
+                  }`}
+                  style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
+                >
+                  <div className="relative aspect-square w-full overflow-hidden bg-white">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(202,161,75,0.04),transparent_70%)] pointer-events-none" />
+                    {cardVariant.image ? (
+                      <Image
+                        src={cardVariant.image}
+                        alt={f.name}
+                        fill
+                        sizes="120px"
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-ink/15">
+                        <Shirt className="h-7 w-7" strokeWidth={1.25} />
+                      </div>
+                    )}
+                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-black/25 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                    {f.variants.length > 1 && (
+                      <span className="absolute left-1.5 top-1.5 rounded-full bg-gold-gradient px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-ink shadow-gold">
+                        {f.variants.length} Colors
+                      </span>
+                    )}
+                    {isSelected ? (
+                      <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-gold-gradient text-ink shadow-gold">
+                        <Check className="h-3 w-3" strokeWidth={2.5} />
+                      </span>
+                    ) : (
+                      <span className="pointer-events-none absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-ink/10 bg-white/85 text-ink/50 opacity-0 shadow-sm backdrop-blur-md transition-all duration-300 group-hover:border-gold-400/40 group-hover:text-gold-600 group-hover:opacity-100">
+                        <ArrowRight className="h-2.5 w-2.5" />
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-0 p-2">
+                    <p className="truncate text-xs font-bold text-ink group-hover:text-gold-700 transition-colors duration-300">{f.name}</p>
+                    <p className="text-[11px] font-bold text-gold-600">
+                      {f.variants.length > 1 ? "From " : ""}₹{f.variants[0].price}<span className="font-semibold text-ink/50">/m</span>
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {showFabricPicker && (
+          <>
+            {/* "Send my own" is its own compact row, not a grid tile — otherwise
+                it either stretches to fill a leftover slot or strands alone in a
+                near-empty row, both of which look broken and add dead height. */}
+            <button
+              type="button"
+              onClick={chooseOwnFabric}
+              className={`flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left transition-all duration-300 ${
+                ownFabric
+                  ? "border-gold-400 bg-gold-400/10 shadow-gold ring-2 ring-gold-400/30"
+                  : "border-dashed border-ink/20 bg-white hover:border-gold-400/40 hover:shadow-soft"
+              }`}
+            >
+              <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-300 ${ownFabric ? "bg-gold-400/25 text-gold-700" : "bg-gold-400/10 text-gold-600"}`}>
+                {ownFabric ? <Check className="h-4.5 w-4.5" strokeWidth={2.5} /> : <PackageCheck className="h-4.5 w-4.5" />}
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-bold leading-snug text-ink">I'll Send My Own Fabric</span>
+                <span className="block text-xs font-semibold text-ink/50">No fabric charge</span>
+              </span>
+            </button>
+
+            {compatibleFabrics.length === 0 && (
+              <p className="mt-2 text-sm font-semibold text-ink/55">No catalog fabrics mapped to this outfit yet — you can still send your own.</p>
+            )}
+          </>
         )}
 
         {/* Once a catalog fabric is picked: its color + how much of it to cut,
@@ -403,7 +537,7 @@ function OutfitConfigurator({ product, variants, compatibleFabrics }) {
           <div className="space-y-4 rounded-xl border border-ink/10 bg-white p-4">
             {selectedFabric.variants.length > 1 && (
               <div>
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600">Select Color</p>
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gold-600">Select Color</p>
                 <div className="flex flex-wrap gap-2">
                   {selectedFabric.variants.map((v) => (
                     <button
@@ -433,27 +567,21 @@ function OutfitConfigurator({ product, variants, compatibleFabrics }) {
 
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600">Fabric Needed</p>
-                <p className="mt-1 text-xs text-ink/45">Standard is {meters}m — increase it if you need extra.</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold-600">Fabric Needed</p>
+                <p className="mt-1 text-xs font-semibold text-ink/55">Standard is {meters}m — increase it if you need extra.</p>
               </div>
-              <div className="flex shrink-0 items-center gap-2 rounded-full border border-ink/10 bg-ivory-deep px-3 py-1.5">
-                <button
-                  type="button"
-                  onClick={() => setCustomMeters((m) => Math.max(meters, Number((m - 0.5).toFixed(1))))}
-                  className="text-ink/55 hover:text-gold-700 transition-colors"
-                  aria-label="Decrease meters"
-                >
-                  <Minus className="h-3.5 w-3.5" />
-                </button>
-                <span className="w-10 text-center text-sm font-semibold text-ink">{customMeters}m</span>
-                <button
-                  type="button"
-                  onClick={() => setCustomMeters((m) => Number((m + 0.5).toFixed(1)))}
-                  className="text-ink/55 hover:text-gold-700 transition-colors"
-                  aria-label="Increase meters"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                </button>
+              <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-gold-400/20 bg-white px-3 py-1.5">
+                <input
+                  type="number"
+                  step="0.5"
+                  min={meters}
+                  value={customMeters}
+                  onChange={(e) => setCustomMeters(e.target.value === "" ? "" : Number(e.target.value))}
+                  onBlur={(e) => setCustomMeters(Math.max(meters, Number(e.target.value) || meters))}
+                  className="w-14 rounded-lg border-none bg-transparent text-center text-sm font-semibold text-ink focus:outline-none focus:ring-1 focus:ring-gold-400/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  aria-label="Fabric meters needed"
+                />
+                <span className="text-sm font-semibold text-ink">m</span>
               </div>
             </div>
           </div>
@@ -462,20 +590,62 @@ function OutfitConfigurator({ product, variants, compatibleFabrics }) {
 
       <MeasurementsStep
         step={2}
-        garmentType={product.garment_type}
+        sections={measurementSections}
+        sectionsData={sectionsData}
+        updateSection={updateSection}
         measurementType={measurementType}
         setMeasurementType={setMeasurementType}
-        kurta={kurta}
-        setKurta={setKurta}
-        pajama={pajama}
-        setPajama={setPajama}
-        pant={pant}
-        setPant={setPant}
+        extraWorkOptions={extraWorkOptions}
         extraWork={extraWork}
         setExtraWork={setExtraWork}
         notes={notes}
         setNotes={setNotes}
       />
+
+      {/* Step 3: Review — a quick recap before committing, so the customer
+          isn't hunting back through steps 1-2 to double-check what they picked */}
+      {fabricChosen && (
+        <div className="space-y-3 rounded-2xl border border-gold-400/15 bg-white p-5 shadow-soft">
+          <StepHeading number={3} icon={PackageCheck}>Review &amp; Confirm</StepHeading>
+          <div className="space-y-2.5 rounded-xl border border-ink/10 bg-white p-4 text-sm">
+            <div className="flex items-start justify-between gap-3">
+              <span className="font-semibold text-ink/55">Fabric</span>
+              <span className="text-right font-bold text-ink">
+                {fabricDisplayName}
+                {selectedVariant && <span className="font-semibold text-ink/45"> · {customMeters}m</span>}
+              </span>
+            </div>
+            {measurementSections.map((s) => {
+              const data = sectionsData[s.key] || {};
+              const isChild = data._forChild;
+              return (
+                <div key={s.key} className="flex items-start justify-between gap-3">
+                  <span className="font-semibold text-ink/55">{s.type.label}</span>
+                  <span className="text-right font-bold text-ink">
+                    {measurementType === "reference_garment"
+                      ? "From reference garment"
+                      : isChild
+                        ? data.age
+                          ? `Child · ${data.age} yr${data.age === "1" ? "" : "s"}`
+                          : "Child — age not picked yet"
+                        : "Custom measurements"}
+                  </span>
+                </div>
+              );
+            })}
+            {selectedExtraWork.length > 0 && (
+              <div className="flex items-start justify-between gap-3">
+                <span className="font-semibold text-ink/55">Extra Work</span>
+                <span className="text-right font-bold text-ink">{selectedExtraWork.map((o) => o.label).join(", ")}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between border-t border-ink/10 pt-2.5">
+              <span className="font-bold text-gold-600">Total</span>
+              <span className="font-bold text-gold-700">₹{totalPrice.toLocaleString("en-IN")}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add to Bag + Buy Now CTA */}
       <div className="flex flex-col sm:flex-row items-stretch gap-4">
@@ -494,12 +664,12 @@ function OutfitConfigurator({ product, variants, compatibleFabrics }) {
           <Zap className="h-4 w-4 text-gold-600" /> Buy Now
         </button>
       </div>
-      {!fabricChosen && <p className="text-center text-sm text-ink/45 -mt-4">Choose a fabric (or "send my own") to continue.</p>}
+      {!fabricChosen && <p className="text-center text-sm font-bold text-ink/55 -mt-4">Choose a fabric (or "send my own") to continue.</p>}
     </div>
   );
 }
 
-function SimplePurchasePanel({ product, variants, compatibleOutfits }) {
+function SimplePurchasePanel({ product, variants, compatibleOutfits, garmentTypesByKey }) {
   const router = useRouter();
   const ctx = useProductVariant();
   const [localSelectedId, setLocalSelectedId] = useState(variants[0]?.id);
@@ -553,10 +723,10 @@ function SimplePurchasePanel({ product, variants, compatibleOutfits }) {
         <span className="font-display text-3xl sm:text-4xl font-semibold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gold-600 via-gold-500 to-gold-700">
           ₹{selected.price.toLocaleString("en-IN")}
         </span>
-        {product.product_type === "fabric" && <span className="text-base text-ink/45">/ meter</span>}
+        {product.product_type === "fabric" && <span className="text-base sm:text-lg font-bold text-ink/60">/ meter</span>}
         {selected.original_price && selected.original_price > selected.price && (
           <>
-            <span className="text-base text-ink/45 line-through">
+            <span className="text-base sm:text-lg font-bold text-ink/50 line-through">
               ₹{selected.original_price.toLocaleString("en-IN")}
             </span>
             <span className="rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400">
@@ -569,8 +739,8 @@ function SimplePurchasePanel({ product, variants, compatibleOutfits }) {
       {/* Size buttons — skipped entirely when there's only one variant (nothing to choose) */}
       {variants.length > 1 && (
         <div>
-          <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600">
-            {product.product_type === "fabric" ? "Select Color" : "Select Size"}
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-gold-600">
+            Select {product.variantLabel || "Size"}
           </p>
           <div className="flex flex-wrap gap-2">
             {variants.map((v) => (
@@ -581,7 +751,7 @@ function SimplePurchasePanel({ product, variants, compatibleOutfits }) {
                 className={`flex items-center gap-1.5 rounded-2xl border px-5 py-2.5 text-sm sm:text-base transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-20 ${
                   selectedId === v.id
                     ? "bg-gold-gradient text-ink border-transparent font-semibold shadow-gold/20 scale-[1.02]"
-                    : "border-ink/10 bg-ivory-deep text-ink/55 hover:border-gold-400/30 hover:text-ink"
+                    : "border-ink/10 bg-white text-ink/65 hover:border-gold-400/30 hover:text-ink"
                 }`}
               >
                 {selectedId === v.id && <Check className="h-3.5 w-3.5" />}
@@ -606,10 +776,10 @@ function SimplePurchasePanel({ product, variants, compatibleOutfits }) {
 
       {/* Quantity Selector */}
       <div>
-        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-gold-600">
+        <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-gold-600">
           {product.product_type === "fabric" ? "Meters" : "Quantity"}
         </p>
-        <div className="flex w-fit items-center justify-between rounded-full border border-ink/10 bg-ivory-deep px-5 py-3">
+        <div className="flex w-fit items-center justify-between rounded-full border border-gold-400/20 bg-white px-5 py-3">
           <button
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
             className="text-ink/55 hover:text-gold-700 transition-colors"
@@ -627,7 +797,7 @@ function SimplePurchasePanel({ product, variants, compatibleOutfits }) {
           </button>
         </div>
         {product.product_type === "fabric" && (
-          <p className="mt-2 text-sm text-ink/45">
+          <p className="mt-2 text-sm sm:text-base font-bold text-ink/70">
             Total: ₹{(selected.price * quantity).toLocaleString("en-IN")} for {quantity}m
           </p>
         )}
@@ -658,37 +828,108 @@ function SimplePurchasePanel({ product, variants, compatibleOutfits }) {
         )}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center justify-center gap-2 w-full text-center text-sm text-ink/45 hover:text-emerald-600 transition-colors py-2.5 border border-dashed border-ink/15 rounded-2xl hover:border-emerald-500/30 bg-ivory-deep"
+        className="inline-flex items-center justify-center gap-2 w-full text-center text-sm font-bold text-ink/60 hover:text-emerald-600 transition-colors py-2.5 border border-dashed border-ink/15 rounded-2xl hover:border-emerald-500/30 bg-white"
       >
         <MessageSquare className="w-3.5 h-3.5 text-emerald-500" /> Prefer to order on WhatsApp instead?
       </a>
 
-      {/* Fabric-only: what can be made from this fabric */}
-      {product.product_type === "fabric" && compatibleOutfits.length > 0 && (
-        <div className="rounded-2xl border border-ink/10 bg-ivory-deep p-5">
-          <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gold-600">
-            <Shirt className="h-4 w-4" /> What Can Be Made From This Fabric
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {compatibleOutfits.map((o) => (
-              <a
-                key={o.id}
-                href={`/shop/${o.slug}?fabric=${product.id}&variant=${selected.id}`}
-                className="flex items-center gap-1.5 rounded-full border border-ink/10 px-4 py-2 text-sm text-ink/70 transition-colors hover:border-gold-400/40 hover:text-gold-700"
-              >
-                {o.name} <ArrowRight className="h-3.5 w-3.5" />
-              </a>
-            ))}
+      {/* Fabric-only: what can be made from this fabric. Products sharing a
+          garment_type (e.g. two kurta variants) collapse into one category
+          card with a "N styles" count badge — click opens a dedicated picker
+          page instead of cramming every style inline here. */}
+      {product.product_type === "fabric" && compatibleOutfits.length > 0 && (() => {
+        const outfitGroups = groupOutfitsByGarmentType(compatibleOutfits, garmentTypesByKey);
+        return (
+          <div className="rounded-2xl border border-gold-400/15 bg-white p-5 shadow-soft">
+            <div className="mb-4">
+              <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gold-600">
+                <Shirt className="h-4 w-4" /> What Can Be Made From This Fabric
+              </p>
+              <p className="mt-1 pl-6 text-sm font-bold text-ink/60">
+                {outfitGroups.length} outfit{outfitGroups.length === 1 ? "" : "s"} tailored from this fabric — pick one to continue
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {outfitGroups.map((g, i) => {
+                const groupImage = garmentTypesByKey.get(g.items[0].garmentType)?.image_url || g.items[0].image || null;
+                const href =
+                  g.items.length === 1
+                    ? `/shop/${g.items[0].slug}?fabric=${product.id}&variant=${selected.id}`
+                    : `/shop/${product.slug}/choose/${g.items[0].garmentType}?variant=${selected.id}`;
+                const fromPrice = Math.min(...g.items.map((o) => o.price ?? Infinity));
+                return (
+                  <a
+                    key={g.key}
+                    href={href}
+                    className="group relative flex flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-soft transition-all duration-500 hover:-translate-y-1 hover:border-gold-400/40 hover:shadow-gold animate-fadeUp opacity-0"
+                    style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
+                  >
+                    <div className="relative aspect-[4/5] w-full overflow-hidden bg-white">
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(202,161,75,0.04),transparent_70%)] pointer-events-none" />
+                      {groupImage ? (
+                        <Image
+                          src={groupImage}
+                          alt={g.label}
+                          fill
+                          sizes="150px"
+                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-ink/15">
+                          <Shirt className="h-8 w-8" strokeWidth={1.1} />
+                        </div>
+                      )}
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/25 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                      {g.items.length > 1 && (
+                        <span className="absolute left-1.5 top-1.5 rounded-full bg-gold-gradient px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-ink shadow-gold">
+                          {g.items.length} Styles
+                        </span>
+                      )}
+                      <span className="pointer-events-none absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border border-ink/10 bg-white/85 text-ink/50 opacity-0 shadow-sm backdrop-blur-md transition-all duration-300 group-hover:border-gold-400/40 group-hover:text-gold-600 group-hover:opacity-100">
+                        <ArrowRight className="h-3 w-3" />
+                      </span>
+                    </div>
+                    <div className="space-y-0.5 p-2.5">
+                      <p className="truncate text-sm font-bold text-ink group-hover:text-gold-700 transition-colors duration-300">
+                        {g.items.length === 1 ? g.items[0].name : g.label}
+                      </p>
+                      {Number.isFinite(fromPrice) && (
+                        <p className="text-xs font-bold text-gold-600">
+                          {g.items.length > 1 ? "From " : ""}₹{fromPrice.toLocaleString("en-IN")}
+                          <span className="font-semibold text-ink/50"> stitching</span>
+                        </p>
+                      )}
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
 
-export default function ProductPurchasePanel({ product, variants, compatibleOutfits = [], compatibleFabrics = [] }) {
+export default function ProductPurchasePanel({
+  product,
+  variants,
+  compatibleOutfits = [],
+  compatibleFabrics = [],
+  garmentTypes = [],
+  extraWorkOptions = [],
+}) {
+  const garmentTypesByKey = new Map(garmentTypes.map((g) => [g.key, g]));
   if (product.product_type === "outfit") {
-    return <OutfitConfigurator product={product} variants={variants} compatibleFabrics={compatibleFabrics} />;
+    return (
+      <OutfitConfigurator
+        product={product}
+        variants={variants}
+        compatibleFabrics={compatibleFabrics}
+        garmentTypesByKey={garmentTypesByKey}
+        extraWorkOptions={extraWorkOptions}
+      />
+    );
   }
-  return <SimplePurchasePanel product={product} variants={variants} compatibleOutfits={compatibleOutfits} />;
+  return <SimplePurchasePanel product={product} variants={variants} compatibleOutfits={compatibleOutfits} garmentTypesByKey={garmentTypesByKey} />;
 }

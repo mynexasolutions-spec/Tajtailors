@@ -24,8 +24,8 @@ export default function ContactForm() {
           <CheckCircle2 className="h-8 w-8" />
         </div>
         <span className="eyebrow mt-6 inline-flex">Message Received</span>
-        <h3 className="font-display mt-3 text-2xl text-ink font-medium">Thank You for Your Message</h3>
-        <p className="mx-auto mt-3 max-w-sm text-base leading-relaxed text-ink/60 font-light">
+        <h3 className="font-display mt-3 text-2xl text-ink font-semibold">Thank You for Your Message</h3>
+        <p className="mx-auto mt-3 max-w-sm text-base leading-relaxed text-ink/75 font-semibold">
           We have received your message. Our team will review it and reply to you in a few hours.
         </p>
 
@@ -79,11 +79,10 @@ export default function ContactForm() {
                 key={topic.id}
                 type="button"
                 onClick={() => setSelectedTopic(topic.id)}
-                className={`rounded-full px-5 py-2.5 text-xs transition-all duration-300 ${
-                  selectedTopic === topic.id
+                className={`rounded-full px-5 py-2.5 text-xs transition-all duration-300 ${selectedTopic === topic.id
                     ? "bg-gold-gradient text-ink font-semibold shadow-gold hover:scale-[1.02]"
-                    : "border border-ink/10 bg-ivory-deep text-ink/60 hover:border-gold-400/40 hover:text-ink"
-                }`}
+                    : "border border-ink/10 bg-ivory-deep text-ink/65 font-semibold hover:border-gold-400/40 hover:text-ink"
+                  }`}
               >
                 {topic.label}
               </button>
@@ -107,7 +106,7 @@ export default function ContactForm() {
               name="name"
               type="text"
               placeholder="e.g. Rohan Mehta"
-              className="w-full rounded-2xl border border-ink/10 bg-ivory-deep px-4 py-4 text-base text-ink placeholder:text-ink/30 transition-all duration-500 focus:border-gold-400/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/30"
+              className="w-full rounded-2xl border border-ink/10 bg-ivory-deep px-4 py-4 text-base text-ink font-semibold placeholder:text-ink/35 transition-all duration-500 focus:border-gold-400/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/30"
             />
           </div>
 
@@ -120,7 +119,7 @@ export default function ContactForm() {
                 name="email"
                 type="email"
                 placeholder="yourname@gmail.com"
-                className="w-full rounded-2xl border border-ink/10 bg-ivory-deep px-4 py-4 text-base text-ink placeholder:text-ink/30 transition-all duration-500 focus:border-gold-400/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/30"
+                className="w-full rounded-2xl border border-ink/10 bg-ivory-deep px-4 py-4 text-base text-ink font-semibold placeholder:text-ink/35 transition-all duration-500 focus:border-gold-400/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/30"
               />
             </div>
             <div>
@@ -131,7 +130,7 @@ export default function ContactForm() {
                 name="phone"
                 type="tel"
                 placeholder="+91 90123 45678"
-                className="w-full rounded-2xl border border-ink/10 bg-ivory-deep px-4 py-4 text-base text-ink placeholder:text-ink/30 transition-all duration-500 focus:border-gold-400/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/30"
+                className="w-full rounded-2xl border border-ink/10 bg-ivory-deep px-4 py-4 text-base text-ink font-semibold placeholder:text-ink/35 transition-all duration-500 focus:border-gold-400/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/30"
               />
             </div>
           </div>
@@ -153,7 +152,7 @@ export default function ContactForm() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Tell us about your fabric, stitching, or measurement query..."
-              className="w-full rounded-2xl border border-ink/10 bg-ivory-deep px-4 py-4 text-base text-ink placeholder:text-ink/30 transition-all duration-500 focus:border-gold-400/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-400/20 resize-none hover:border-gold-400/30"
+              className="w-full rounded-2xl border border-ink/10 bg-ivory-deep px-4 py-4 text-base text-ink font-semibold placeholder:text-ink/35 transition-all duration-500 focus:border-gold-400/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-400/20 resize-none hover:border-gold-400/30"
             />
           </div>
         </div>
