@@ -40,12 +40,14 @@ export default async function RootLayout({ children }) {
   const quantityDiscount = await getQuantityDiscountSettings();
 
   return (
-    <html lang="en" className={`${display.variable} ${body.variable}`}>
-      <body>
+    <html lang="en" className={`${display.variable} ${body.variable} overflow-x-hidden`}>
+      <body className="overflow-x-hidden">
         <ToastProvider>
           <WishlistProvider>
             <CartProvider>
-              {children}
+              <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+                {children}
+              </div>
               <CartDrawer quantityDiscount={quantityDiscount} />
               <FloatingWhatsApp />
             </CartProvider>

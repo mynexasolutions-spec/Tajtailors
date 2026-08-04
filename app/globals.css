@@ -5,6 +5,7 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
@@ -69,16 +70,20 @@
 html {
   scrollbar-width: thin;
 }
+
 ::-webkit-scrollbar {
   width: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: #f5f5f5;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #dcb35f;
   border-radius: 999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #caa14b;
 }
@@ -88,6 +93,7 @@ html {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

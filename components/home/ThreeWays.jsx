@@ -84,7 +84,7 @@ export default function ThreeWays({ heading, cards }) {
                 </div>
 
                 <div
-                  className={`relative overflow-hidden ${way.width || "w-[36%] sm:w-[34%]" } shrink-0 transition-transform duration-500 group-hover:-translate-y-1`}
+                  className={`relative overflow-hidden ${way.width || "w-[36%] sm:w-[34%]"} shrink-0 transition-transform duration-500 group-hover:-translate-y-1`}
                   style={{ aspectRatio: way.ratio }}
                 >
                   <Image

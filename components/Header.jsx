@@ -15,6 +15,7 @@ import {
   Ruler,
   LifeBuoy,
   ChevronRight,
+  LogOut,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { useCart } from "@/context/CartContext";
@@ -47,9 +48,8 @@ function Logo({ scrolled }) {
         width={1672}
         height={941}
         priority
-        className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${
-          scrolled ? "h-9 sm:h-12" : "h-11 sm:h-16"
-        }`}
+        className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? "h-9 sm:h-12" : "h-11 sm:h-16"
+          }`}
       />
     </Link>
   );
@@ -206,13 +206,12 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
   ];
 
   return (
-    <header className={`sticky top-0 z-40 transition-all duration-300 ${
-      mobileOpen
+    <header className={`sticky top-0 z-40 transition-all duration-300 ${mobileOpen
         ? "bg-white"
         : scrolled
           ? "bg-white/80 backdrop-blur-xl border-b border-gold-500/10 shadow-soft"
           : "bg-white/95 backdrop-blur-lg border-b border-ink/5"
-    }`}>
+      }`}>
       <UtilityBar brandInfo={brandInfo} announcement={announcement} />
 
       {/* Shimmering bottom hairline */}
@@ -254,8 +253,8 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
             onClick={() => setSearchOpen((o) => !o)}
             aria-label="Search"
             className={`flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border transition-all duration-300 hover:scale-105 hover:shadow-gold ${searchOpen
-                ? "border-gold-400/40 bg-gold-400/10 text-gold-700"
-                : "border-ink/10 bg-white text-ink/70 hover:border-gold-400/30 hover:bg-ivory-deep hover:text-gold-700"
+              ? "border-gold-400/40 bg-gold-400/10 text-gold-700"
+              : "border-ink/10 bg-white text-ink/70 hover:border-gold-400/30 hover:bg-ivory-deep hover:text-gold-700"
               }`}
           >
             <Search className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -413,7 +412,7 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
                     aria-label="Log out"
                     className="flex h-12 w-12 items-center justify-center rounded-xl border border-ink/10 text-ink/70 hover:border-red-400/30 hover:bg-red-500/5 hover:text-red-500 transition-all"
                   >
-                    <X className="h-5 w-5" />
+                    <LogOut className="h-5 w-5" />
                   </button>
                 </form>
               </div>

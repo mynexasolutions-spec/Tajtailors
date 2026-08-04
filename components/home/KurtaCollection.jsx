@@ -47,9 +47,8 @@ function KurtaCard({ kurta, delay }) {
     <Reveal delay={delay}>
       <Link
         href={href}
-        className={`group flex flex-col overflow-hidden rounded-2xl border bg-white transition-all duration-300 hover:-translate-y-1.5 hover:border-gold-400/40 hover:shadow-gold ${
-          kurta.isFeatured ? "border-gold-400/50 shadow-gold" : "border-ink/10"
-        }`}
+        className={`group flex flex-col overflow-hidden rounded-2xl border bg-white transition-all duration-300 hover:-translate-y-1.5 hover:border-gold-400/40 hover:shadow-gold ${kurta.isFeatured ? "border-gold-400/50 shadow-gold" : "border-ink/10"
+          }`}
       >
         <div className="relative aspect-[4/5] w-full overflow-hidden">
           <Image

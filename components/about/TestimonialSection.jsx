@@ -58,9 +58,8 @@ export default function TestimonialSection({
             {visible.map((t, i) => (
               <div
                 key={`${t.id}-${i}`}
-                className={`group flex h-full flex-col rounded-3xl border border-gold-400/20 bg-gradient-to-br from-white via-ivory to-ivory-deep p-8 shadow-soft transition-all duration-500 hover:border-gold-400/40 hover:-translate-y-1 ${
-                  i === 0 ? "" : "hidden md:flex"
-                }`}
+                className={`group flex h-full flex-col rounded-3xl border border-gold-400/20 bg-gradient-to-br from-white via-ivory to-ivory-deep p-8 shadow-soft transition-all duration-500 hover:border-gold-400/40 hover:-translate-y-1 ${i === 0 ? "" : "hidden md:flex"
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex gap-1">
@@ -110,9 +109,8 @@ export default function TestimonialSection({
                   <button
                     key={idx}
                     onClick={() => goTo(idx)}
-                    className={`h-2.5 rounded-full transition-all duration-300 ${
-                      idx === startIndex ? "w-8 bg-gold-500" : "w-2.5 bg-ink/15 hover:bg-gold-400/40"
-                    }`}
+                    className={`h-2.5 rounded-full transition-all duration-300 ${idx === startIndex ? "w-8 bg-gold-500" : "w-2.5 bg-ink/15 hover:bg-gold-400/40"
+                      }`}
                     aria-label={`Go to testimonial ${idx + 1}`}
                   />
                 ))}

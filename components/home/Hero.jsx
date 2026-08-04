@@ -188,9 +188,8 @@ export default function Hero({
               alt="Taj Tailor background"
               fill
               priority
-              className={`object-cover animate-kenBurns transition-opacity duration-700 ease-in-out ${
-                animating ? "opacity-0" : "opacity-100"
-              }`}
+              className={`object-cover animate-kenBurns transition-opacity duration-700 ease-in-out ${animating ? "opacity-0" : "opacity-100"
+                }`}
             />
           </div>
         ) : (
@@ -215,9 +214,8 @@ export default function Hero({
 
       <div className="relative mx-auto max-w-wrap px-4 sm:px-6 md:px-12 w-full z-10">
         {/* Content Container (Left-aligned overlay) */}
-        <div className={`max-w-2xl flex flex-col justify-center animate-fadeUp transition-all duration-500 ease-in-out ${
-          animating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
-        }`}>
+        <div className={`max-w-2xl flex flex-col justify-center animate-fadeUp transition-all duration-500 ease-in-out ${animating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
+          }`}>
           {heroText}
         </div>
       </div>
