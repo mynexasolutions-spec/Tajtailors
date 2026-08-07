@@ -17,7 +17,7 @@ export async function createTestimonial(testimonial) {
 
   const { data: existing } = await supabase
     .from("testimonials")
-    .select("id")
+    .select("display_order")
     .order("display_order", { ascending: false })
     .limit(1);
   const nextOrder = existing?.[0] ? existing[0].display_order + 1 : 0;
