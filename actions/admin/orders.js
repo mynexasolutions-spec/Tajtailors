@@ -29,6 +29,7 @@ export async function getOrderById(id) {
       pickup_required, pickup_preferred_date, pickup_notes,
       tracking_number, courier_name, tracking_url, shipment_status,
       pickup_waybill, pickup_tracking_url, pickup_status,
+      razorpay_payment_id, razorpay_order_id,
       profiles ( full_name, email, phone ),
       delivery_address:addresses!address_id ( full_name, phone, address_line_1, address_line_2, city, state, postal_code, country ),
       pickup_address:addresses!pickup_address_id ( full_name, phone, address_line_1, address_line_2, city, state, postal_code, country ),

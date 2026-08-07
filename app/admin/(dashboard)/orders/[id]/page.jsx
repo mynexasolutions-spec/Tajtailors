@@ -262,6 +262,11 @@ export default async function AdminOrderDetailPage({ params }) {
           <p className="mt-5 text-sm text-ink/65 font-semibold">
             Payment method: <span className="text-ink font-bold">{order.payment_method === "COD" ? "Cash on Delivery" : "Online (Razorpay)"}</span>
           </p>
+          {order.payment_method === "RAZORPAY" && order.razorpay_payment_id && (
+            <p className="mt-2 text-sm text-ink/65 font-semibold flex items-center flex-wrap gap-1.5">
+              Razorpay ID: <span className="font-mono text-ink font-bold select-all bg-ivory-deep border border-ink/10 px-2 py-0.5 rounded-lg">{order.razorpay_payment_id}</span>
+            </p>
+          )}
           <DelhiveryShipmentManager order={order} />
         </div>
       </div>

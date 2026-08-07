@@ -30,7 +30,7 @@ export default function FeaturedSpotlight({
 
       <div className="relative z-10 flex flex-col gap-6 h-full justify-between">
         
-        {/* Grid content - balanced 6/6 columns to make image larger */}
+        {/* Grid content - balanced 6/6 columns for larger image */}
         <div className="grid grid-cols-12 items-center gap-4 md:gap-6">
           
           {/* Left: Details Column */}
@@ -40,7 +40,7 @@ export default function FeaturedSpotlight({
               <Sparkles className="h-3 w-3 text-gold-600 animate-pulse" /> {eyebrow}
             </span>
             
-            <h2 className="font-display text-3xl sm:text-5xl md:text-5xl font-extrabold tracking-tight leading-none text-ink">
+            <h2 className="font-display text-2xl sm:text-4xl md:text-4xl font-extrabold tracking-tight leading-snug text-ink">
               {title}
             </h2>
 
@@ -68,7 +68,7 @@ export default function FeaturedSpotlight({
 
             {price != null && (
               <div className="mt-3.5 flex items-baseline gap-1.5">
-                <span className="font-display text-2xl sm:text-3xl md:text-[2.75rem] md:leading-none font-extrabold text-gold-700 tracking-tight">
+                <span className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold text-gold-700 tracking-tight">
                   ₹{price.toLocaleString("en-IN")}
                 </span>
                 {product?.oldPrice && product.oldPrice > price && (

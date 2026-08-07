@@ -48,7 +48,7 @@ function Logo({ scrolled }) {
         width={1672}
         height={941}
         priority
-        className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? "h-9 sm:h-12" : "h-11 sm:h-16"
+        className={`w-auto object-contain transition-all duration-500 group-hover:scale-105 ${scrolled ? "h-11 sm:h-12" : "h-14 sm:h-16"
           }`}
       />
     </Link>

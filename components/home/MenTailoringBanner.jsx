@@ -28,11 +28,11 @@ export default function MenTailoringBanner({
       
       <div className="relative z-10 flex flex-col gap-5 h-full justify-between">
         
-        {/* Main content grid - compact columns on laptop/desktop */}
+        {/* Main content grid - details 6 columns, image 6 columns to match FeaturedSpotlight exactly */}
         <div className="grid grid-cols-12 items-center gap-4 md:gap-8">
           
           {/* Left Column (Text Details) */}
-          <div className="col-span-7 text-white flex flex-col justify-center">
+          <div className="col-span-6 text-white flex flex-col justify-center">
             <span className="mb-2.5 inline-flex w-fit items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[8px] sm:text-[9px] font-bold tracking-[0.15em] text-white/90 uppercase">
               <Scissors className="h-2.5 w-2.5" /> Tailoring
             </span>
@@ -66,13 +66,13 @@ export default function MenTailoringBanner({
             </div>
           </div>
 
-          {/* Right Column (Model Image) */}
-          <div className="col-span-5 relative aspect-[3/4] w-full overflow-hidden rounded-2xl shrink-0">
+          {/* Right Column (Model Image - Exact matching aspect ratio and 6-column span) */}
+          <div className="col-span-6 relative aspect-[3/4] md:aspect-[4/5] w-full overflow-hidden rounded-2xl shrink-0">
             <Image
               src={imageUrl}
               alt="Men Tailoring"
               fill
-              sizes="(max-width: 640px) 150px, 350px"
+              sizes="(max-width: 640px) 180px, 450px"
               className="object-cover"
               priority
             />
