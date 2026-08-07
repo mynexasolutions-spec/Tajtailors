@@ -2,6 +2,7 @@
 
 import { unstable_cache, revalidateTag } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resolveMapsLink } from "@/lib/googleMaps";
 
 // Default settings (fallback if table doesn't exist, and to backfill any
 // keys that don't have a row in the DB yet).
@@ -9,10 +10,15 @@ const DEFAULT_SETTINGS = {
   brand_name: { value: "Taj Tailor", category: "brand", description: "Brand name" },
   tagline: { value: "Ghar Baithe Perfect Fitting", category: "brand", description: "Brand tagline" },
   email: { value: "tajtailor@gmail.com", category: "contact", description: "Business email" },
-  whatsapp_number: { value: "911234567890", category: "contact", description: "WhatsApp number (with country code, no spaces)" },
-  whatsapp_display: { value: "+91 12345 67890", category: "contact", description: "WhatsApp display format" },
-  call_number: { value: "911234567890", category: "contact", description: "Call button number (with country code, no spaces)" },
-  call_display: { value: "+91 12345 67890", category: "contact", description: "Call button display format" },
+  whatsapp_number: { value: "919084395978", category: "contact", description: "WhatsApp number (with country code, no spaces)" },
+  whatsapp_display: { value: "+91 90843 95978", category: "contact", description: "WhatsApp display format" },
+  call_number: { value: "919084395978", category: "contact", description: "Call button number (with country code, no spaces)" },
+  call_display: { value: "+91 90843 95978", category: "contact", description: "Call button display format" },
+  google_maps_url: {
+    value: "https://www.google.com/maps/place/Taj+tailor/@28.9735927,78.940371,17z",
+    category: "contact",
+    description: "Google Maps link for your shop (paste any Google Maps share link — it's resolved automatically)",
+  },
   instagram_url: { value: "https://www.instagram.com/", category: "social", description: "Instagram profile URL" },
   facebook_url: { value: "https://www.facebook.com/", category: "social", description: "Facebook profile URL" },
   youtube_url: { value: "https://youtube.com/", category: "social", description: "YouTube channel URL" },
@@ -67,6 +73,11 @@ const DEFAULT_SETTINGS = {
 
   home_spotlight_enabled: { value: "true", category: "home_sections", description: "Show the Featured Spotlight section on the homepage" },
   home_spotlight_eyebrow: { value: "Signature Piece", category: "home_sections", description: "Featured Spotlight — small label above the product name (e.g. 'Our Specialty', 'Customer Favorite')" },
+  home_spotlight_title: { value: "Swades Dubai Raja – White", category: "home_sections", description: "Featured Spotlight — Main Title" },
+  home_spotlight_desc: { value: "Premium Swades Dubai Raja linen-cotton blend in white, sold by the meter — breathable linen texture with everyday cotton comfort.", category: "home_sections", description: "Featured Spotlight — Description" },
+  home_spotlight_price: { value: "749", category: "home_sections", description: "Featured Spotlight — Price" },
+  home_spotlight_image: { value: "", category: "home_sections", description: "Featured Spotlight — Image URL" },
+  home_spotlight_link: { value: "/shop", category: "home_sections", description: "Featured Spotlight — Shop Button Link / URL" },
 
   home_trustbar_enabled: { value: "true", category: "home_sections", description: "Show the trust bar strip on the homepage" },
   home_trustbar_1_title: { value: "Free Pickup & Delivery", category: "home_sections", description: "Trust Bar — item 1 title" },
@@ -143,7 +154,11 @@ export async function updateSiteSetting(key, value) {
   try {
     const supabase = createAdminClient();
     const meta = DEFAULT_SETTINGS[key];
-    const payload = { key, value, updated_at: new Date().toISOString() };
+    // Short share links (maps.app.goo.gl, share.google) resolve to a
+    // one-time redirect — follow it now so the contact page can build the
+    // embed straight from the stored value without a network hop per view.
+    const resolvedValue = key === "google_maps_url" ? await resolveMapsLink(value) : value;
+    const payload = { key, value: resolvedValue, updated_at: new Date().toISOString() };
     if (meta) {
       payload.category = meta.category;
       payload.description = meta.description;

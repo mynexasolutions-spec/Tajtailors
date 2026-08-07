@@ -1,91 +1,121 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Sparkles, Star } from "lucide-react";
+import { Sparkles, Star } from "lucide-react";
 import Reveal from "@/components/Reveal";
 
-export default function FeaturedSpotlight({ product, eyebrow = "Signature Piece" }) {
-  if (!product) return null;
+export default function FeaturedSpotlight({
+  product,
+  eyebrow = "Signature Piece",
+  customTitle,
+  customDesc,
+  customPrice,
+  customImage,
+  customLink,
+  className = "",
+}) {
+  const title = customTitle || product?.name;
+  const description = customDesc || product?.shortDescription;
+  const price = customPrice ? Number(customPrice) : product?.price;
+  const image = customImage || product?.image;
+  const href = customLink || (product?.slug ? `/shop/${product.slug}` : "/shop");
+  const ctaLabel = product?.productType === "outfit" ? "Get It Stitched" : "See Details";
 
-  const href = product.slug ? `/shop/${product.slug}` : "/shop";
-  const ctaLabel = product.productType === "outfit" ? "Get It Stitched" : "Shop This Piece";
+  if (!title) return null;
 
   return (
-    <section className="relative overflow-hidden bg-white py-16 sm:py-24">
+    <Reveal className={`relative overflow-hidden rounded-[2.5rem] border border-gold-400/20 bg-gradient-to-br from-white via-gold-50/5 to-white p-6 sm:p-8 shadow-soft hover:shadow-gold/10 hover:border-gold-400/35 transition-all duration-500 group ${className}`}>
+      {/* Subtle gold gradient line at the top */}
+      <div className="absolute inset-x-0 top-0 h-[3px] bg-gold-gradient" />
+      <div className="absolute right-0 top-0 h-64 w-64 -mr-16 -mt-16 bg-gold-400/5 rounded-full blur-2xl pointer-events-none" />
 
-      <div className="relative mx-auto max-w-wrap px-4 sm:px-6 md:px-12">
-        <Reveal className="relative grid grid-cols-1 items-center gap-10 rounded-[3rem] border border-gold-400/25 bg-white p-8 shadow-xl hover:shadow-2xl hover:border-gold-500/40 transition-all duration-500 sm:p-12 md:grid-cols-2 md:gap-16 md:p-16 overflow-hidden">
-          {/* Top accent ribbon and subtle inner light */}
-          <div className="absolute inset-x-0 top-0 h-[4px] bg-gold-gradient" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(202,161,75,0.03),transparent_55%)] pointer-events-none" />
+      <div className="relative z-10 flex flex-col gap-6 h-full justify-between">
+        
+        {/* Grid content - balanced 6/6 columns to make image larger */}
+        <div className="grid grid-cols-12 items-center gap-4 md:gap-6">
+          
+          {/* Left: Details Column */}
+          <div className="col-span-6 flex flex-col justify-center">
+            {/* Badge */}
+            <span className="mb-2.5 inline-flex w-fit items-center gap-1.5 rounded-full border border-gold-400/20 bg-gold-50 px-2.5 py-1 text-[8px] sm:text-[9px] font-bold tracking-[0.15em] text-gold-700 uppercase">
+              <Sparkles className="h-3 w-3 text-gold-600 animate-pulse" /> {eyebrow}
+            </span>
+            
+            <h2 className="font-display text-3xl sm:text-5xl md:text-5xl font-extrabold tracking-tight leading-none text-ink">
+              {title}
+            </h2>
 
-          {/* Image */}
-          <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2.2rem] border border-gold-400/15 bg-white shadow-soft group/img">
-            {/* Double framing border inside image */}
-            <div className="absolute inset-3 rounded-[1.8rem] border border-gold-400/10 pointer-events-none z-10" />
+            {product?.rating > 0 && !customTitle && (
+              <div className="mt-2 flex items-center gap-1.5">
+                <div className="flex items-center gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-3 w-3 ${i < Math.round(product.rating) ? "fill-gold-500 text-gold-500" : "fill-none text-ink/20"}`}
+                    />
+                  ))}
+                </div>
+                <span className="text-[10px] font-bold text-ink/50">
+                  ({product.rating.toFixed(1)})
+                </span>
+              </div>
+            )}
 
-            {product.image && (
+            {description && (
+              <p className="mt-3.5 text-sm sm:text-base md:text-lg leading-relaxed text-ink/65 font-medium pr-1 line-clamp-3">
+                {description}
+              </p>
+            )}
+
+            {price != null && (
+              <div className="mt-3.5 flex items-baseline gap-1.5">
+                <span className="font-display text-2xl sm:text-3xl md:text-[2.75rem] md:leading-none font-extrabold text-gold-700 tracking-tight">
+                  ₹{price.toLocaleString("en-IN")}
+                </span>
+                {product?.oldPrice && product.oldPrice > price && (
+                  <span className="text-sm font-semibold text-ink/40 line-through">
+                    ₹{product.oldPrice.toLocaleString("en-IN")}
+                  </span>
+                )}
+                {product?.productType === "fabric" && (
+                  <span className="text-[10px] font-bold text-ink/40 uppercase tracking-widest">/ m</span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Right: Image Column (Larger 6-column Sizing) */}
+          <div className="col-span-6 relative aspect-[3/4] md:aspect-[4/5] w-full overflow-hidden rounded-2xl shrink-0">
+            {image && (
               <Image
-                src={product.image}
-                alt={product.name}
+                src={image}
+                alt={title}
                 fill
-                sizes="(max-width: 768px) 90vw, 40vw"
-                className="object-cover transition-transform duration-750 ease-out group-hover/img:scale-105"
+                sizes="(max-width: 640px) 180px, 450px"
+                className="object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-105"
+                priority
               />
             )}
-            {product.badge && (
-              <span className="absolute left-6 top-6 z-20 rounded-full bg-gold-gradient px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-ink shadow-gold">
+            
+            {product?.badge && (
+              <span className="absolute left-4 top-4 z-20 rounded-full bg-gold-gradient px-3 py-1 text-[8px] font-bold uppercase tracking-widest text-ink shadow-gold">
                 {product.badge}
               </span>
             )}
           </div>
 
-          {/* Details */}
-          <div className="relative z-10">
-            <span className="eyebrow mb-4 text-xs font-bold tracking-[0.25em] text-gold-700 uppercase flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-gold-600 animate-pulse" /> {eyebrow}
-            </span>
-            <h2 className="font-display text-4xl sm:text-5xl md:text-6xl font-extrabold text-ink tracking-tight leading-tight">
-              {product.name}
-            </h2>
+        </div>
 
-            {product.rating > 0 && (
-              <div className="mt-4 flex items-center gap-2">
-                <div className="flex items-center gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-4 w-4 ${i < Math.round(product.rating) ? "fill-gold-500 text-gold-500" : "fill-none text-ink/20"}`}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm font-bold text-ink/60">
-                  {product.rating.toFixed(1)} {product.reviewCount > 0 && `(${product.reviewCount} reviews)`}
-                </span>
-              </div>
-            )}
+        {/* Bottom Button Row */}
+        <div className="mt-2">
+          <Link
+            href={href}
+            className="inline-flex w-fit items-center justify-center rounded-xl bg-gold-gradient px-8 py-3.5 text-center text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-ink shadow-xl hover:bg-ink hover:text-white active:scale-[0.99] transition-all duration-300"
+          >
+            {ctaLabel}
+          </Link>
+        </div>
 
-            {product.shortDescription && (
-              <p className="mt-6 text-base sm:text-lg leading-relaxed text-ink/75 font-semibold">
-                {product.shortDescription}
-              </p>
-            )}
-
-            {product.price != null && (
-              <p className="mt-6 font-display text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gold-600 via-gold-500 to-gold-700 tracking-tight">
-                ₹{product.price.toLocaleString("en-IN")}
-              </p>
-            )}
-
-            <Link
-              href={href}
-              className="btn-gold group mt-8 inline-flex w-fit items-center gap-2.5 px-10 py-4.5 text-xs font-bold uppercase tracking-[0.2em] shadow-gold hover:scale-[1.02] transition-all duration-300"
-            >
-              {ctaLabel}
-              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </Link>
-          </div>
-        </Reveal>
       </div>
-    </section>
+    </Reveal>
   );
 }

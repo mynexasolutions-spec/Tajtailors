@@ -13,9 +13,9 @@ const FALLBACK_FABRICS = [
 ];
 
 function FabricSwatch({ fabric }) {
-  const href = fabric.slug ? `/shop/${fabric.slug}` : "/shop";
+  const href = fabric.slug ? `/shop/${fabric.slug}` : "/shop?category=5decb952-79e2-4eb3-8176-040ab2c6f6ad";
   return (
-    <Link href={href} className="group flex flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white transition-all duration-300 hover:-translate-y-1.5 hover:border-gold-400/40 hover:shadow-gold">
+    <Link href={href} className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white transition-all duration-300 hover:-translate-y-1.5 hover:border-gold-400/40 hover:shadow-gold">
       <div className="relative aspect-square w-full overflow-hidden">
         <Image
           src={fabric.image}
@@ -31,9 +31,9 @@ function FabricSwatch({ fabric }) {
           </span>
         </div>
       </div>
-      <div className="p-3.5 sm:p-4">
+      <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between">
         <p className="text-base font-medium text-ink sm:text-lg">{fabric.name}</p>
-        <p className="mt-0.5 text-sm text-gold-600 sm:text-base">From ₹{fabric.price} / Meter</p>
+        <p className="mt-1 text-sm text-gold-600 sm:text-base">From ₹{fabric.price} / Meter</p>
       </div>
     </Link>
   );
@@ -53,7 +53,7 @@ export default function PremiumFabrics({ fabrics = [], eyebrow = "Handpicked Mat
             <h2 className="section-heading mt-3 text-4xl sm:text-5xl md:text-6xl">{heading}</h2>
           </div>
           <Link
-            href="/shop"
+            href="/shop?category=5decb952-79e2-4eb3-8176-040ab2c6f6ad"
             className="group inline-flex shrink-0 items-center gap-2 rounded-full border border-gold-400/25 bg-white px-6 py-3 text-xs font-semibold uppercase tracking-widest text-gold-600 backdrop-blur-sm transition-all duration-300 hover:border-gold-500/50 hover:bg-gold-400/10 hover:text-gold-700"
           >
             View All Fabrics
@@ -61,9 +61,9 @@ export default function PremiumFabrics({ fabrics = [], eyebrow = "Handpicked Mat
           </Link>
         </Reveal>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-6 items-stretch">
           {items.map((fabric, i) => (
-            <Reveal key={fabric.id || fabric.name} delay={i * 60}>
+            <Reveal key={fabric.id || fabric.name} delay={i * 60} className="h-full">
               <FabricSwatch fabric={fabric} />
             </Reveal>
           ))}

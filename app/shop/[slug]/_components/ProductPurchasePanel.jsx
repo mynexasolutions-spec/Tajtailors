@@ -93,7 +93,9 @@ function MeasurementGrid({ fields, values, onChange }) {
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
       {fields.map((f) => (
         <div key={f.key}>
-          <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink/60">{f.label} (in)</label>
+          <label className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-ink/60">
+            {f.label} {f.required !== false ? <span className="text-red-500">*</span> : <span className="text-ink/40 font-normal lowercase">(optional)</span>} (in)
+          </label>
           <input
             type="number"
             step="0.5"
@@ -147,7 +149,9 @@ function GarmentSection({ title, config, values, onChange }) {
           )}
           {otherFields.map((f) => (
             <div key={f.key}>
-              <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink/60">{f.label}</label>
+              <label className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-ink/60">
+                {f.label} {f.required !== false ? <span className="text-red-500">*</span> : <span className="text-ink/40 font-normal lowercase">(optional)</span>}
+              </label>
               <PillGroup
                 options={f.type === "yes_no" ? YES_NO_OPTIONS : f.options || []}
                 value={values[f.key]}
@@ -160,6 +164,36 @@ function GarmentSection({ title, config, values, onChange }) {
           )}
         </>
       )}
+    </div>
+  );
+}
+
+// Lets the customer jump between Fabric / Measurements / Review without all
+// three sitting stacked in one long scroll next to the sticky gallery —
+// "Review" only appears once a fabric is chosen, since there's nothing to
+// review before that.
+function StepTabs({ tabs, active, onChange }) {
+  return (
+    <div className="flex gap-2 overflow-x-auto rounded-2xl border border-gold-400/15 bg-white p-1.5 shadow-soft">
+      {tabs.map((t) => (
+        <button
+          key={t.key}
+          type="button"
+          onClick={() => onChange(t.key)}
+          className={`flex flex-1 shrink-0 items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-bold uppercase tracking-wide transition-all duration-300 ${
+            active === t.key ? "bg-gold-gradient text-ink shadow-gold" : "text-ink/50 hover:bg-gold-400/5 hover:text-ink/80"
+          }`}
+        >
+          <span
+            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
+              active === t.key ? "bg-white/25 text-ink" : "bg-ink/10 text-ink/50"
+            }`}
+          >
+            {t.number}
+          </span>
+          {t.label}
+        </button>
+      ))}
     </div>
   );
 }
@@ -300,6 +334,15 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
   // style/body size can need more, so the customer can bump it up themselves
   // and pay for the extra instead of needing a call to sort it out later.
   const [customMeters, setCustomMeters] = useState(meters);
+  // Which of the three steps is showing — only one at a time, instead of
+  // stacking Fabric + Measurements + Review together in one long scroll
+  // next to the sticky gallery, which read as confusing/disconnected.
+  // step=measure arrives from the style picker's "Continue" — the customer
+  // already browsed styles there, so landing back on product details next
+  // felt redundant; jump straight into measurements instead.
+  const [activeTab, setActiveTab] = useState(
+    searchParams.get("step") === "measure" || preselectedFabric ? "measure" : "fabric"
+  );
 
   if (!stitchingVariant) {
     return (
@@ -325,6 +368,7 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
     setOwnFabric(false);
     setCustomMeters(meters);
     setShowFabricPicker(false);
+    setActiveTab("measure");
   };
   const chooseOwnFabric = () => {
     setSelectedFabricId(null);
@@ -332,6 +376,7 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
     setOwnFabric(true);
     setCustomMeters(meters);
     setShowFabricPicker(false);
+    setActiveTab("measure");
   };
 
   const fabricDisplayName =
@@ -370,8 +415,34 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
     notes: notes || null,
   });
 
+  const validateMeasurements = () => {
+    if (measurementType === "manual") {
+      for (const s of measurementSections) {
+        const data = sectionsData[s.key] || {};
+        if (data._forChild) {
+          if (!data.age) {
+            showToast(`Please select the age for ${s.type.label}.`, "error");
+            setActiveTab("measure");
+            return false;
+          }
+        } else {
+          const requiredFields = (s.type?.fields || []).filter((f) => f.type !== "age" && f.required !== false);
+          for (const f of requiredFields) {
+            if (!data[f.key] || String(data[f.key]).trim() === "") {
+              showToast(`Please fill in the required field: ${s.type.label} - ${f.label}`, "error");
+              setActiveTab("measure");
+              return false;
+            }
+          }
+        }
+      }
+    }
+    return true;
+  };
+
   const handleAdd = () => {
     if (!fabricChosen) return;
+    if (!validateMeasurements()) return;
     addToCart(buildCartItem(), 1);
     showToast(`${product.name} added to your bag.`);
     setDrawerOpen(true);
@@ -379,6 +450,7 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
 
   const handleBuyNow = () => {
     if (!fabricChosen) return;
+    if (!validateMeasurements()) return;
     addToCart(buildCartItem(), 1);
     setDrawerOpen(false);
     router.push("/checkout");
@@ -400,9 +472,20 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
         </span>
       </div>
 
+      <StepTabs
+        tabs={[
+          { key: "fabric", number: 1, label: "Fabric" },
+          { key: "measure", number: 2, label: "Measurements" },
+          ...(fabricChosen ? [{ key: "review", number: 3, label: "Review" }] : []),
+        ]}
+        active={activeTab}
+        onChange={setActiveTab}
+      />
+
       {/* Step 1: Fabric choice — grid + own-fabric option, plus (once a catalog
           fabric is picked) its color and meters-needed, all grouped in one card
           so the whole "what fabric am I getting" decision reads as one step */}
+      {activeTab === "fabric" && (
       <div className="space-y-4 rounded-2xl border border-gold-400/15 bg-white p-5 shadow-soft">
         <div>
           <StepHeading number={1} icon={Shirt}>Choose Your Fabric</StepHeading>
@@ -587,7 +670,9 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
           </div>
         )}
       </div>
+      )}
 
+      {activeTab === "measure" && (
       <MeasurementsStep
         step={2}
         sections={measurementSections}
@@ -601,10 +686,11 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
         notes={notes}
         setNotes={setNotes}
       />
+      )}
 
       {/* Step 3: Review — a quick recap before committing, so the customer
           isn't hunting back through steps 1-2 to double-check what they picked */}
-      {fabricChosen && (
+      {activeTab === "review" && fabricChosen && (
         <div className="space-y-3 rounded-2xl border border-gold-400/15 bg-white p-5 shadow-soft">
           <StepHeading number={3} icon={PackageCheck}>Review &amp; Confirm</StepHeading>
           <div className="space-y-2.5 rounded-xl border border-ink/10 bg-white p-4 text-sm">
@@ -669,7 +755,7 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
   );
 }
 
-function SimplePurchasePanel({ product, variants, compatibleOutfits, garmentTypesByKey }) {
+function SimplePurchasePanel({ product, variants, compatibleOutfits, garmentTypesByKey, brandInfo }) {
   const router = useRouter();
   const ctx = useProductVariant();
   const [localSelectedId, setLocalSelectedId] = useState(variants[0]?.id);
@@ -678,9 +764,29 @@ function SimplePurchasePanel({ product, variants, compatibleOutfits, garmentType
   const [quantity, setQuantity] = useState(1);
   const { addToCart, setDrawerOpen } = useCart();
   const { showToast } = useToast();
+  const hasStitching = product.product_type === "fabric" && compatibleOutfits.length > 0;
+  // Buying the raw fabric and browsing what it can be stitched into are two
+  // different intents — tabs keep them apart instead of stacking both flows
+  // into one long scroll where the stitching options end up buried below.
+  const [activeTab, setActiveTab] = useState("buy");
 
   const selected = variants.find((v) => v.id === selectedId) || variants[0];
   const inStock = selected && selected.stock_quantity > 0;
+
+  // "Both" mode (color + size): colors are picked first, then only the
+  // sizes that exist for that color are offered — two steps instead of one
+  // flat list, since a single variant row is a specific color+size pair.
+  const isBoth = product.variantLabel === "Both";
+  const colorGroups = isBoth
+    ? Array.from(new Map(variants.map((v) => [v.color_name, v])).values())
+    : [];
+  const currentColor = selected?.color_name ?? colorGroups[0]?.color_name;
+  const sizesForColor = isBoth ? variants.filter((v) => v.color_name === currentColor) : [];
+  const pickColor = (colorName) => {
+    const candidates = variants.filter((v) => v.color_name === colorName);
+    const preferred = candidates.find((v) => v.stock_quantity > 0) || candidates[0];
+    if (preferred) setSelectedId(preferred.id);
+  };
 
   if (!variants || variants.length === 0) {
     return (
@@ -736,8 +842,69 @@ function SimplePurchasePanel({ product, variants, compatibleOutfits, garmentType
         )}
       </div>
 
+      {(!hasStitching || activeTab === "buy") && (
+      <>
+      {/* Both mode: color swatches first, then only the sizes that exist for
+          the chosen color. Plain Size/Color mode keeps the original single
+          row of pills further below, unchanged. */}
+      {isBoth && (
+        <>
+          {colorGroups.length > 1 && (
+            <div>
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-gold-600">Select Color</p>
+              <div className="flex flex-wrap gap-2">
+                {colorGroups.map((v) => (
+                  <button
+                    key={v.color_name}
+                    onClick={() => pickColor(v.color_name)}
+                    className={`flex items-center gap-1.5 rounded-2xl border px-5 py-2.5 text-sm sm:text-base transition-all duration-300 ${
+                      currentColor === v.color_name
+                        ? "bg-gold-gradient text-ink border-transparent font-semibold shadow-gold/20 scale-[1.02]"
+                        : "border-ink/10 bg-white text-ink/65 hover:border-gold-400/30 hover:text-ink"
+                    }`}
+                  >
+                    {currentColor === v.color_name && <Check className="h-3.5 w-3.5" />}
+                    {v.color_hex && (
+                      <span
+                        className="h-5 w-5 shrink-0 rounded-full border border-ink/15"
+                        style={{ backgroundColor: v.color_hex }}
+                      />
+                    )}
+                    {v.color_name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {sizesForColor.length > 0 && (
+            <div>
+              <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-gold-600">Select Size</p>
+              <div className="flex flex-wrap gap-2">
+                {sizesForColor.map((v) => (
+                  <button
+                    key={v.id}
+                    disabled={v.stock_quantity <= 0}
+                    onClick={() => setSelectedId(v.id)}
+                    className={`flex items-center gap-1.5 rounded-2xl border px-5 py-2.5 text-sm sm:text-base transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-20 ${
+                      selectedId === v.id
+                        ? "bg-gold-gradient text-ink border-transparent font-semibold shadow-gold/20 scale-[1.02]"
+                        : "border-ink/10 bg-white text-ink/65 hover:border-gold-400/30 hover:text-ink"
+                    }`}
+                  >
+                    {selectedId === v.id && <Check className="h-3.5 w-3.5" />}
+                    {v.size_name}
+                  </button>
+                ))}
+              </div>
+              {!inStock && <p className="mt-3 text-sm text-red-400 font-semibold">This size is out of stock.</p>}
+            </div>
+          )}
+        </>
+      )}
+
       {/* Size buttons — skipped entirely when there's only one variant (nothing to choose) */}
-      {variants.length > 1 && (
+      {!isBoth && variants.length > 1 && (
         <div>
           <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-gold-600">
             Select {product.variantLabel || "Size"}
@@ -757,7 +924,7 @@ function SimplePurchasePanel({ product, variants, compatibleOutfits, garmentType
                 {selectedId === v.id && <Check className="h-3.5 w-3.5" />}
                 {v.color_hex && (
                   <span
-                    className="h-3.5 w-3.5 shrink-0 rounded-full border border-ink/15"
+                    className="h-5 w-5 shrink-0 rounded-full border border-ink/15"
                     style={{ backgroundColor: v.color_hex }}
                   />
                 )}
@@ -824,7 +991,8 @@ function SimplePurchasePanel({ product, variants, compatibleOutfits, garmentType
       {/* WhatsApp Link */}
       <a
         href={whatsappLink(
-          `Hi Taj Tailor, I'd like to order ${product.name} (${selected.variant_name}).`
+          `Hi Taj Tailor, I'd like to order ${product.name} (${selected.variant_name}).`,
+          brandInfo
         )}
         target="_blank"
         rel="noopener noreferrer"
@@ -833,78 +1001,100 @@ function SimplePurchasePanel({ product, variants, compatibleOutfits, garmentType
         <MessageSquare className="w-3.5 h-3.5 text-emerald-500" /> Prefer to order on WhatsApp instead?
       </a>
 
+      {/* Spacer so the fixed bottom tab bar never covers the WhatsApp link */}
+      <div className="h-20" />
+      </>
+      )}
+
+      {/* Fixed bottom tab bar — replaces the old inline pill tabs + floating
+          "want this stitched" nudge with one persistent switcher between
+          buying the raw fabric and browsing what it can be stitched into. */}
+      {hasStitching && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-gold-400/20 bg-white/95 px-4 py-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] backdrop-blur-md">
+          <div className="mx-auto max-w-wrap">
+            <StepTabs
+              tabs={[
+                { key: "buy", number: 1, label: "Buy Fabric" },
+                { key: "stitch", number: 2, label: "Get It Stitched" },
+              ]}
+              active={activeTab}
+              onChange={setActiveTab}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Fabric-only: what can be made from this fabric. Products sharing a
           garment_type (e.g. two kurta variants) collapse into one category
           card with a "N styles" count badge — click opens a dedicated picker
           page instead of cramming every style inline here. */}
-      {product.product_type === "fabric" && compatibleOutfits.length > 0 && (() => {
+      {hasStitching && activeTab === "stitch" && (() => {
         const outfitGroups = groupOutfitsByGarmentType(compatibleOutfits, garmentTypesByKey);
         return (
-          <div className="rounded-2xl border border-gold-400/15 bg-white p-5 shadow-soft">
-            <div className="mb-4">
-              <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gold-600">
-                <Shirt className="h-4 w-4" /> What Can Be Made From This Fabric
-              </p>
-              <p className="mt-1 pl-6 text-sm font-bold text-ink/60">
-                {outfitGroups.length} outfit{outfitGroups.length === 1 ? "" : "s"} tailored from this fabric — pick one to continue
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {outfitGroups.map((g, i) => {
-                const groupImage = garmentTypesByKey.get(g.items[0].garmentType)?.image_url || g.items[0].image || null;
-                const href =
-                  g.items.length === 1
-                    ? `/shop/${g.items[0].slug}?fabric=${product.id}&variant=${selected.id}`
-                    : `/shop/${product.slug}/choose/${g.items[0].garmentType}?variant=${selected.id}`;
-                const fromPrice = Math.min(...g.items.map((o) => o.price ?? Infinity));
-                return (
-                  <a
-                    key={g.key}
-                    href={href}
-                    className="group relative flex flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-soft transition-all duration-500 hover:-translate-y-1 hover:border-gold-400/40 hover:shadow-gold animate-fadeUp opacity-0"
-                    style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
-                  >
-                    <div className="relative aspect-[4/5] w-full overflow-hidden bg-white">
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(202,161,75,0.04),transparent_70%)] pointer-events-none" />
-                      {groupImage ? (
-                        <Image
-                          src={groupImage}
-                          alt={g.label}
-                          fill
-                          sizes="150px"
-                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-ink/15">
-                          <Shirt className="h-8 w-8" strokeWidth={1.1} />
-                        </div>
-                      )}
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/25 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                      {g.items.length > 1 && (
+          <>
+            <div className="rounded-2xl border border-gold-400/15 bg-white p-5 shadow-soft">
+              <div className="mb-4">
+                <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gold-600">
+                  <Shirt className="h-4 w-4" /> What Can Be Made From This Fabric
+                </p>
+                <p className="mt-1 pl-6 text-sm font-bold text-ink/60">
+                  {outfitGroups.length} outfit{outfitGroups.length === 1 ? "" : "s"} tailored from this fabric — pick one to continue
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {outfitGroups.map((g, i) => {
+                  const groupImage = garmentTypesByKey.get(g.items[0].garmentType)?.image_url || g.items[0].image || null;
+                  const href = `/shop/${product.slug}/choose/${g.items[0].garmentType}?variant=${selected.id}`;
+                  const fromPrice = Math.min(...g.items.map((o) => o.price ?? Infinity));
+                  return (
+                    <a
+                      key={g.key}
+                      href={href}
+                      className="group relative flex flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-soft transition-all duration-500 hover:-translate-y-1 hover:border-gold-400/40 hover:shadow-gold animate-fadeUp opacity-0"
+                      style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
+                    >
+                      <div className="relative aspect-square w-full overflow-hidden bg-white">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(202,161,75,0.04),transparent_70%)] pointer-events-none" />
+                        {groupImage ? (
+                          <Image
+                            src={groupImage}
+                            alt={g.label}
+                            fill
+                            sizes="150px"
+                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-ink/15">
+                            <Shirt className="h-8 w-8" strokeWidth={1.1} />
+                          </div>
+                        )}
+                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/25 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                         <span className="absolute left-1.5 top-1.5 rounded-full bg-gold-gradient px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-ink shadow-gold">
-                          {g.items.length} Styles
+                          {g.items.length} Option{g.items.length === 1 ? "" : "s"}
                         </span>
-                      )}
-                      <span className="pointer-events-none absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border border-ink/10 bg-white/85 text-ink/50 opacity-0 shadow-sm backdrop-blur-md transition-all duration-300 group-hover:border-gold-400/40 group-hover:text-gold-600 group-hover:opacity-100">
-                        <ArrowRight className="h-3 w-3" />
-                      </span>
-                    </div>
-                    <div className="space-y-0.5 p-2.5">
-                      <p className="truncate text-sm font-bold text-ink group-hover:text-gold-700 transition-colors duration-300">
-                        {g.items.length === 1 ? g.items[0].name : g.label}
-                      </p>
-                      {Number.isFinite(fromPrice) && (
-                        <p className="text-xs font-bold text-gold-600">
-                          {g.items.length > 1 ? "From " : ""}₹{fromPrice.toLocaleString("en-IN")}
-                          <span className="font-semibold text-ink/50"> stitching</span>
+                        <span className="pointer-events-none absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border border-ink/10 bg-white/85 text-ink/50 opacity-0 shadow-sm backdrop-blur-md transition-all duration-300 group-hover:border-gold-400/40 group-hover:text-gold-600 group-hover:opacity-100">
+                          <ArrowRight className="h-3 w-3" />
+                        </span>
+                      </div>
+                      <div className="space-y-0.5 p-2.5">
+                        <p className="truncate text-sm font-bold text-ink group-hover:text-gold-700 transition-colors duration-300">
+                          {g.items.length === 1 ? g.items[0].name : g.label}
                         </p>
-                      )}
-                    </div>
-                  </a>
-                );
-              })}
+                        {Number.isFinite(fromPrice) && (
+                          <p className="text-xs font-bold text-gold-600">
+                            {g.items.length > 1 ? "From " : ""}₹{fromPrice.toLocaleString("en-IN")}
+                            <span className="font-semibold text-ink/50"> stitching</span>
+                          </p>
+                        )}
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+            {/* Spacer so the fixed bottom tab bar never covers the last row */}
+            <div className="h-20" />
+          </>
         );
       })()}
     </div>
@@ -918,6 +1108,7 @@ export default function ProductPurchasePanel({
   compatibleFabrics = [],
   garmentTypes = [],
   extraWorkOptions = [],
+  brandInfo,
 }) {
   const garmentTypesByKey = new Map(garmentTypes.map((g) => [g.key, g]));
   if (product.product_type === "outfit") {
@@ -931,5 +1122,5 @@ export default function ProductPurchasePanel({
       />
     );
   }
-  return <SimplePurchasePanel product={product} variants={variants} compatibleOutfits={compatibleOutfits} garmentTypesByKey={garmentTypesByKey} />;
+  return <SimplePurchasePanel product={product} variants={variants} compatibleOutfits={compatibleOutfits} garmentTypesByKey={garmentTypesByKey} brandInfo={brandInfo} />;
 }

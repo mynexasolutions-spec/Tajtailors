@@ -1,10 +1,12 @@
 import PolicyLayout from "@/components/PolicyLayout";
-import { BRAND } from "@/lib/constants";
+import { settingsToBrand } from "@/lib/constants";
+import { getSiteSettings } from "@/actions/settings";
 import { Truck } from "lucide-react";
 
 export const metadata = { title: "Shipping Policy" };
 
-export default function ShippingPolicyPage() {
+export default async function ShippingPolicyPage() {
+  const brandInfo = settingsToBrand(await getSiteSettings());
   return (
     <PolicyLayout title="Shipping Policy" updated="July 2026" icon={Truck}>
       <p>We ship across India from our fulfillment location. Orders are packed with care to protect glass bottles and caps during transit.</p>
@@ -15,7 +17,7 @@ export default function ShippingPolicyPage() {
       <h2 className="font-display text-xl font-medium text-gold-200">Shipping Charges</h2>
       <p>Shipping is free on prepaid and COD orders above our free-shipping threshold, shown at checkout. A flat shipping fee applies below that, and a small COD handling fee applies to Cash on Delivery orders.</p>
       <h2 className="font-display text-xl font-medium text-gold-200">Questions About Your Order</h2>
-      <p>Write to us at {BRAND.email} or message us on WhatsApp at {BRAND.whatsappDisplay} with your order number.</p>
+      <p>Write to us at {brandInfo.email} or message us on WhatsApp at {brandInfo.whatsappDisplay} with your order number.</p>
     </PolicyLayout>
   );
 }

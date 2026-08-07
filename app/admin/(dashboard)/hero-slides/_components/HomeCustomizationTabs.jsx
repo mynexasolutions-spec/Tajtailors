@@ -10,6 +10,7 @@ const TABS = [
   { id: "marquee", label: "Marquee Strip", icon: Sparkles, sections: ["marquee"] },
   { id: "threeways", label: "3 Easy Ways", icon: Layers, sections: ["threeways"] },
   { id: "howitworks", label: "How It Works", icon: Route, sections: ["howitworks"] },
+  { id: "mentailoring", label: "Men Tailoring", icon: Shirt, sections: ["mentailoring"] },
   { id: "fabrics", label: "Premium Fabrics", icon: Shirt, sections: ["fabrics"] },
   { id: "kurtas", label: "Kurta Collection", icon: ShoppingBag, sections: ["kurtas"] },
   { id: "spotlight", label: "Featured Spotlight", icon: Star, sections: ["spotlight"] },
@@ -30,11 +31,10 @@ export default function HomeCustomizationTabs({ slides, settings }) {
             <button
               key={tab.id}
               onClick={() => setActiveId(tab.id)}
-              className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border px-4 py-2 text-xs font-semibold transition-colors duration-300 ${
-                active
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border px-4 py-2 text-xs font-semibold transition-colors duration-300 ${active
                   ? "border-gold-400/40 bg-gold-400/10 text-gold-700"
                   : "border-ink/10 bg-white text-ink/50 hover:border-gold-400/30 hover:text-ink"
-              }`}
+                }`}
             >
               <tab.icon className="h-3.5 w-3.5" />
               {tab.label}

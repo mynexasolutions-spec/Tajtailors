@@ -59,6 +59,7 @@ export async function createGarmentType(_prevState, formData) {
     fields: parseJsonField(formData, "fields"),
     sort_order: Number(formData.get("sort_order") || 0),
     is_active: formData.get("is_active") === "on",
+    is_featured: formData.get("is_featured") === "on",
   });
 
   if (error) return { error: error.code === "23505" ? "A garment type with this name already exists." : error.message };
@@ -86,6 +87,7 @@ export async function updateGarmentType(_prevState, formData) {
       fields: parseJsonField(formData, "fields"),
       sort_order: Number(formData.get("sort_order") || 0),
       is_active: formData.get("is_active") === "on",
+      is_featured: formData.get("is_featured") === "on",
     })
     .eq("id", id);
 

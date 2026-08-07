@@ -5,7 +5,7 @@ import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import FlowStepper from "@/components/shop/FlowStepper";
 import { getProductBySlug, getCompatibleOutfits, getGarmentTypes } from "@/actions/products";
-import OutfitPicker from "./_components/OutfitPicker";
+import OutfitPicker from "@/components/shop/OutfitPicker";
 
 export async function generateMetadata({ params }) {
   const { slug, garmentType } = await params;

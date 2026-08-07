@@ -34,8 +34,8 @@ export async function getProductForEdit(id) {
     .from("products")
     .select(`
       *,
-      product_images ( id, image_url, sort_order, variant_name ),
-      product_variants ( id, variant_name, price, original_price, stock_quantity, is_active, color_hex ),
+      product_images ( id, image_url, sort_order, variant_name, color_name ),
+      product_variants ( id, variant_name, price, original_price, stock_quantity, is_active, color_hex, color_name, size_name ),
       product_faqs ( id, question, answer, display_order )
     `)
     .eq("id", id)
@@ -90,6 +90,7 @@ async function syncChildren(supabase, productId, { images, variants, faqs }) {
         product_id: productId,
         image_url: img.url,
         variant_name: img.size || null,
+        color_name: img.color || null,
         sort_order: i,
       }))
     );
@@ -105,6 +106,8 @@ async function syncChildren(supabase, productId, { images, variants, faqs }) {
         original_price: v.original_price ? Number(v.original_price) : null,
         stock_quantity: Number(v.stock_quantity || 0),
         color_hex: v.color_hex || null,
+        color_name: v.color_name || null,
+        size_name: v.size_name || null,
         is_active: true,
       }))
     );

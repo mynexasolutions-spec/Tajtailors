@@ -7,7 +7,8 @@ import { LogOut } from "lucide-react";
 
 export const metadata = { title: "My Account" };
 
-export default async function AccountPage() {
+export default async function AccountPage({ searchParams }) {
+  const { tab } = (await searchParams) || {};
   const supabase = await createClient();
   const {
     data: { user },
@@ -21,8 +22,12 @@ export default async function AccountPage() {
 
   const { data: orders } = await supabase
     .from("orders")
-    .select("id, order_number, total_amount, order_status, payment_status, payment_method, created_at, order_items ( product_name, variant_name, quantity )")
+    .select("id, order_number, total_amount, order_status, payment_status, payment_method, created_at, tracking_number, tracking_url, courier_name, order_items ( product_name, variant_name, quantity )")
     .eq("user_id", user.id)
+    // Hide abandoned/cancelled Razorpay checkouts (order row exists before
+    // the payment modal opens) until the webhook resolves them to paid or
+    // failed — a customer shouldn't see a "pending" order they never paid for.
+    .or("payment_method.neq.RAZORPAY,payment_status.neq.pending")
     .order("created_at", { ascending: false });
 
   return (
@@ -54,7 +59,7 @@ export default async function AccountPage() {
             </form>
           </div>
 
-          <AccountTabs profile={profile} orders={orders} />
+          <AccountTabs profile={profile} orders={orders} initialTab={tab === "profile" ? "profile" : "orders"} />
         </div>
       </main>
       <Footer />

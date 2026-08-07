@@ -12,6 +12,8 @@ import { ProductVariantProvider } from "./_components/ProductVariantContext";
 import ReviewForm from "./_components/ReviewForm";
 import ReviewsList from "./_components/ReviewsList";
 import { getProductBySlug, getRelatedProducts, getCompatibleOutfits, getCompatibleFabrics, getGarmentTypes, getExtraWorkOptions } from "@/actions/products";
+import { getSiteSettings } from "@/actions/settings";
+import { settingsToBrand } from "@/lib/constants";
 import Reveal from "@/components/Reveal";
 
 // Dedupes the fetch: generateMetadata and the page component both need this
@@ -38,6 +40,7 @@ export default async function ProductDetailPage({ params }) {
   const compatibleFabrics = product.product_type === "outfit" ? await getCompatibleFabrics(product.id) : [];
   const garmentTypes = product.product_type === "fabric" || product.product_type === "outfit" ? await getGarmentTypes() : [];
   const extraWorkOptions = product.product_type === "outfit" ? await getExtraWorkOptions(product.id) : [];
+  const brandInfo = settingsToBrand(await getSiteSettings());
 
   // Fabric/kurta attributes shown as detail cards
   const notes = [
@@ -83,8 +86,8 @@ export default async function ProductDetailPage({ params }) {
           <div className="grid grid-cols-1 gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 lg:items-start">
           <ProductVariantProvider variants={safeProduct.variants}>
 
-            {/* Gallery Panel — sticks in place while purchase details scroll on desktop */}
-            <Reveal className="lg:sticky lg:top-[104px] lg:self-start">
+            {/* Gallery Panel */}
+            <Reveal>
               <ProductGallery images={safeProduct.images} name={safeProduct.name} />
               {product.short_description && (
                 <p className="mt-5 text-base sm:text-lg leading-relaxed text-ink/70 font-semibold">{product.short_description}</p>
@@ -163,6 +166,7 @@ export default async function ProductDetailPage({ params }) {
                     compatibleFabrics={safeCompatibleFabrics}
                     garmentTypes={safeGarmentTypes}
                     extraWorkOptions={safeExtraWorkOptions}
+                    brandInfo={brandInfo}
                   />
                 </Suspense>
               </div>

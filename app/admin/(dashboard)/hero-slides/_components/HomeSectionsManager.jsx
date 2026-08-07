@@ -85,13 +85,30 @@ const SECTIONS = [
     noteHref: "/admin/products",
   },
   {
+    id: "mentailoring",
+    title: "Men Tailoring Banner",
+    enabledKey: "home_mentailoring_enabled",
+    imageKey: "home_mentailoring_image",
+    fields: [
+      { key: "home_mentailoring_title", label: "Title (use newline to split 'Men' and 'Tailoring')", rows: 2 },
+      { key: "home_mentailoring_items", label: "Items List (one item per line)", rows: 4 },
+      { key: "home_mentailoring_price", label: "Price / Label (e.g. '₹ 999/- Onwards')" },
+      { key: "home_mentailoring_link", label: "Button Link / URL (e.g. '/contact')" },
+    ],
+  },
+  {
     id: "spotlight",
     title: "Featured Spotlight",
     enabledKey: "home_spotlight_enabled",
+    imageKey: "home_spotlight_image",
     fields: [
       { key: "home_spotlight_eyebrow", label: "Small Label (e.g. 'Our Specialty', 'Customer Favorite')" },
+      { key: "home_spotlight_title", label: "Title (e.g. 'Swades Dubai Raja – White')" },
+      { key: "home_spotlight_desc", label: "Description / Details" },
+      { key: "home_spotlight_price", label: "Price (e.g. '749')" },
+      { key: "home_spotlight_link", label: "Button Link / Product URL (e.g. '/shop/swades-dubai-raja')" },
     ],
-    note: "Shows your most recently added Featured product (e.g. Kaali Haath Turpai Kurta) — mark it 'Featured' on the Products page to spotlight it here.",
+    note: "Leave these fields blank to automatically fallback to the most recently added Featured product from the Products page.",
     noteHref: "/admin/products",
   },
   {

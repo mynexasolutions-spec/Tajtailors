@@ -47,6 +47,11 @@ export default function ShippingForm({ shipping }) {
         <label className={labelClass}>Cash on Delivery Fee (₹)</label>
         <input type="number" name="cod_charge" defaultValue={shipping.cod_charge} className={inputClass} />
       </div>
+      <div>
+        <label className={labelClass}>Own-Fabric Pickup Fee (₹)</label>
+        <input type="number" name="pickup_charge" defaultValue={shipping.pickup_charge} className={inputClass} />
+        <p className="mt-1.5 text-sm text-ink/35">Charged when a customer sends their own fabric or a reference garment for pickup.</p>
+      </div>
       <button type="submit" disabled={pending} className="btn-gold w-full disabled:opacity-60">
         {pending ? "Saving…" : "Save Settings"}
       </button>

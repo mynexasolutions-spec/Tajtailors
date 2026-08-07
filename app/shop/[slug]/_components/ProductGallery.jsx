@@ -9,14 +9,20 @@ import { useProductVariant } from "./ProductVariantContext";
 
 export default function ProductGallery({ images, name }) {
   const ctx = useProductVariant();
-  const selectedSizeName = ctx?.selected?.variant_name || null;
+  const selected = ctx?.selected || null;
+  const selectedSizeName = selected?.variant_name || null;
+  const selectedColorName = selected?.color_name || null;
 
-  // "General" images (variant_name is null) show for every size; sized
-  // images only show once a shopper picks that size. Fall back to the full
-  // set if nothing matches so the gallery is never empty.
-  const sizeFiltered = (images || []).filter(
-    (img) => !img.variant_name || img.variant_name === selectedSizeName
-  );
+  // "General" images (no variant_name and no color_name) show for every
+  // variant. "Both" mode products match by color_name — one photo covers
+  // every size of that color. Everything else (plain "Size"/"Color" mode
+  // products) matches by the exact variant_name, same as before. Falls back
+  // to the full set if nothing matches so the gallery is never empty.
+  const sizeFiltered = (images || []).filter((img) => {
+    if (!img.variant_name && !img.color_name) return true;
+    if (selectedColorName && img.color_name) return img.color_name === selectedColorName;
+    return img.variant_name === selectedSizeName;
+  });
   const list = sizeFiltered.length > 0 ? sizeFiltered : images && images.length > 0 ? images : [{ id: "placeholder", image_url: null }];
 
   const [active, setActive] = useState(0);
@@ -24,7 +30,7 @@ export default function ProductGallery({ images, name }) {
 
   useEffect(() => {
     setActive(0);
-  }, [selectedSizeName]);
+  }, [selectedSizeName, selectedColorName]);
 
   const activeImage = list[active]?.image_url;
 

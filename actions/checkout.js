@@ -161,6 +161,9 @@ export async function processCheckout(addressInput, items, paymentMethod, coupon
     ? 0
     : shipping.flat_rate ?? SHIPPING_DEFAULTS.flat_rate;
   const codCost = paymentMethod === "COD" ? shipping.cod_charge ?? SHIPPING_DEFAULTS.cod_charge : 0;
+  // Own fabric / reference garment items need a courier pickup from the
+  // customer's address — same idea as the COD fee, folded into shipping_cost.
+  const pickupCost = pickup.required ? shipping.pickup_charge ?? SHIPPING_DEFAULTS.pickup_charge : 0;
 
   const couponResult = await resolveCoupon(supabase, couponCode, subtotal);
   if (couponResult.error) {
@@ -176,7 +179,7 @@ export async function processCheckout(addressInput, items, paymentMethod, coupon
 
   const discountAmount = couponDiscount + quantityDiscount;
 
-  const totalAmount = Math.max(0, subtotal + shippingCost + codCost - discountAmount);
+  const totalAmount = Math.max(0, subtotal + shippingCost + codCost + pickupCost - discountAmount);
 
   const orderNumber = `TAJ-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000)
     .toString()
@@ -189,7 +192,7 @@ export async function processCheckout(addressInput, items, paymentMethod, coupon
       user_id: user.id,
       address_id: addressId,
       subtotal,
-      shipping_cost: shippingCost + codCost,
+      shipping_cost: shippingCost + codCost + pickupCost,
       discount_amount: discountAmount,
       coupon_discount: couponDiscount,
       quantity_discount: quantityDiscount,
@@ -202,6 +205,7 @@ export async function processCheckout(addressInput, items, paymentMethod, coupon
       pickup_address_id: pickupAddressId,
       pickup_preferred_date: pickup.preferredDate || null,
       pickup_notes: pickup.notes || null,
+      pickup_status: pickup.required ? "pending" : null,
     })
     .select("id, order_number")
     .single();

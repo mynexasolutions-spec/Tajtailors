@@ -9,7 +9,7 @@ const inputClass =
   "w-full rounded-2xl border border-ink/10 bg-ivory-deep px-5 py-3.5 text-sm text-ink placeholder:text-ink/30 transition-all duration-500 focus:border-gold-400/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/30";
 const labelClass = "mb-2 block text-xs font-semibold uppercase tracking-widest text-gold-600/90";
 
-const VARIANT_LABEL_OPTIONS = ["Size", "Color"];
+const VARIANT_LABEL_OPTIONS = ["Size", "Color", "Both"];
 
 function slugPreview(text) {
   return (text || "")
@@ -99,7 +99,8 @@ export default function CategoryForm({ category }) {
               ))}
             </div>
             <p className="mt-2 text-sm text-ink/35">
-              What products in this category call their variants — "Size" for kurtas, "Color" for fabrics. Shown on the product form and shop page.
+              What products in this category call their variants — "Size" for kurtas, "Color" for fabrics, or "Both" if products come in
+              multiple colors, each in multiple sizes (e.g. ready-made kurtas), with its own stock per color+size. Shown on the product form and shop page.
             </p>
           </div>
 

@@ -47,7 +47,7 @@ export default function ProductForm({ product, categories, fabricOptions = [], g
     (product?.product_images || [])
       .slice()
       .sort((a, b) => a.sort_order - b.sort_order)
-      .map((i) => ({ url: i.image_url, size: i.variant_name || null }))
+      .map((i) => ({ url: i.image_url, size: i.variant_name || null, color: i.color_name || null }))
   );
   const [variants, setVariants] = useState(
     product?.product_variants?.length
@@ -267,10 +267,17 @@ export default function ProductForm({ product, categories, fabricOptions = [], g
           )}
 
           <div id="variants-section" className={panelClass}>
-            <h2 className="font-display text-base text-ink">{variantLabel}s &amp; Pricing</h2>
+            <h2 className="font-display text-base text-ink">
+              {variantLabel === "Both" ? "Colors, Sizes & Pricing" : `${variantLabel}s & Pricing`}
+            </h2>
             {productType === "fabric" && (
               <p className="text-sm text-ink/45 -mt-3">
                 Add one variant per color this fabric comes in (e.g. "Red", "Navy Blue") — each can have its own price and stock (in meters).
+              </p>
+            )}
+            {variantLabel === "Both" && (
+              <p className="text-sm text-ink/45 -mt-3">
+                Add a color, then add each size it comes in — price and stock are set per color+size combination.
               </p>
             )}
             <VariantsEditor variants={variants} onChange={setVariants} showErrors={showVariantErrors} label={variantLabel} />
@@ -340,7 +347,13 @@ export default function ProductForm({ product, categories, fabricOptions = [], g
 
           <div className={panelClass}>
             <h2 className="font-display text-base text-ink">Gallery Images</h2>
-            <SizeImageMapper images={gallery} onChange={setGallery} variants={variants} folder="tajtailor/products" />
+            <SizeImageMapper
+              images={gallery}
+              onChange={setGallery}
+              variants={variants}
+              mode={variantLabel === "Color" ? "color" : variantLabel === "Both" ? "both" : "size"}
+              folder="tajtailor/products"
+            />
           </div>
         </div>
       </div>

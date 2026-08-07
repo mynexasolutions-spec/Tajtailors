@@ -4,24 +4,32 @@ import { useState } from "react";
 import ImageUploader from "@/components/admin/ImageUploader";
 
 /**
- * `images` is an array of `{ url, size }`, where `size` is either null
- * (shows on every bottle size — "General") or a bottle size's exact
- * `variant_name` text (e.g. "30ml").
+ * `images` is an array of `{ url, size, color }`.
+ * - `size` maps to product_images.variant_name — used in "Size"/"Color" mode
+ *   (in "Color" mode the variant_name IS the color, so this still works).
+ * - `color` maps to product_images.color_name — used only in "Both" mode, so
+ *   one photo can cover every size of a color instead of needing one photo
+ *   per exact size+color combination.
+ * Either null means "General" — shows for every variant.
  */
-export default function SizeImageMapper({ images, onChange, variants, folder = "tajtailor/products" }) {
-  const sizeNames = Array.from(
-    new Set((variants || []).map((v) => (v.variant_name || "").trim()).filter(Boolean))
-  );
-  const tabs = ["General", ...sizeNames];
+export default function SizeImageMapper({ images, onChange, variants, mode = "size", folder = "tajtailor/products" }) {
+  const isBoth = mode === "both";
+
+  const tabNames = isBoth
+    ? Array.from(new Set((variants || []).map((v) => (v.color_name || "").trim()).filter(Boolean)))
+    : Array.from(new Set((variants || []).map((v) => (v.variant_name || "").trim()).filter(Boolean)));
+
+  const tabs = ["General", ...tabNames];
   const [active, setActive] = useState("General");
   const activeTab = tabs.includes(active) ? active : "General";
   const activeKey = activeTab === "General" ? null : activeTab;
+  const field = isBoth ? "color" : "size";
 
-  const activeUrls = images.filter((img) => (img.size || null) === activeKey).map((img) => img.url);
+  const activeUrls = images.filter((img) => (img[field] || null) === activeKey).map((img) => img.url);
 
   const setActiveUrls = (urls) => {
-    const others = images.filter((img) => (img.size || null) !== activeKey);
-    onChange([...others, ...urls.map((url) => ({ url, size: activeKey }))]);
+    const others = images.filter((img) => (img[field] || null) !== activeKey);
+    onChange([...others, ...urls.map((url) => ({ url, [field]: activeKey }))]);
   };
 
   return (
@@ -29,7 +37,7 @@ export default function SizeImageMapper({ images, onChange, variants, folder = "
       <div className="flex flex-wrap gap-2">
         {tabs.map((t) => {
           const key = t === "General" ? null : t;
-          const count = images.filter((img) => (img.size || null) === key).length;
+          const count = images.filter((img) => (img[field] || null) === key).length;
           return (
             <button
               type="button"
@@ -51,6 +59,8 @@ export default function SizeImageMapper({ images, onChange, variants, folder = "
       <p className="text-xs text-ink/45">
         {activeTab === "General"
           ? "These images show for every variant."
+          : isBoth
+          ? `These images show for every size of "${activeTab}".`
           : `These images show only when a shopper selects "${activeTab}".`}
       </p>
 

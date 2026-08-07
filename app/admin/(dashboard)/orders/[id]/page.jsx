@@ -4,6 +4,8 @@ import Image from "next/image";
 import { ArrowLeft, Package, MapPin, CreditCard, Ruler, Truck } from "lucide-react";
 import { getOrderById } from "@/actions/admin/orders";
 import OrderStatusManager from "./_components/OrderStatusManager";
+import DelhiveryShipmentManager from "./_components/DelhiveryShipmentManager";
+import ReferenceGarmentPickupManager from "./_components/ReferenceGarmentPickupManager";
 import SherwaniGlyph from "@/components/SherwaniGlyph";
 
 export const metadata = { title: "Order Detail" };
@@ -122,7 +124,7 @@ export default async function AdminOrderDetailPage({ params }) {
                         <Ruler className="h-3.5 w-3.5" /> Fabric &amp; Measurements
                       </p>
                       <p className="text-ink/80 font-semibold">
-                        Fabric: {item.fabric?.name ? `${item.fabric.name} (${item.fabric_meters}m)` : "Customer's own fabric"}
+                        Fabric: {item.fabric?.name ? `${item.fabric.name} (${item.fabric_meters}m)${item.fabric.product_code ? ` [Code: ${item.fabric.product_code}]` : ""}` : "Customer's own fabric"}
                       </p>
                       {item.measurement_type === "reference_garment" ? (
                         <p className="text-ink/80 font-semibold">Customer is sending a reference garment for sizing.</p>
@@ -244,6 +246,7 @@ export default async function AdminOrderDetailPage({ params }) {
                   )}
                 </div>
               </div>
+              <ReferenceGarmentPickupManager order={order} />
             </div>
           )}
         </div>
@@ -259,6 +262,7 @@ export default async function AdminOrderDetailPage({ params }) {
           <p className="mt-5 text-sm text-ink/65 font-semibold">
             Payment method: <span className="text-ink font-bold">{order.payment_method === "COD" ? "Cash on Delivery" : "Online (Razorpay)"}</span>
           </p>
+          <DelhiveryShipmentManager order={order} />
         </div>
       </div>
     </div>

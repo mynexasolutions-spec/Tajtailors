@@ -9,7 +9,8 @@ import TestimonialSection from "@/components/about/TestimonialSection";
 import StatCounter from "@/components/about/StatCounter";
 import { getFeaturedProducts } from "@/actions/products";
 import { getActiveTestimonials } from "@/actions/site";
-import { whatsappLink } from "@/lib/constants";
+import { getSiteSettings } from "@/actions/settings";
+import { whatsappLink, settingsToBrand } from "@/lib/constants";
 import {
   Ruler,
   Clock,
@@ -79,11 +80,13 @@ const STATS = [
 ];
 
 export default async function AboutPage() {
-  const [featuredProducts, testimonials] = await Promise.all([
+  const [featuredProducts, testimonials, settings] = await Promise.all([
     getFeaturedProducts(4),
     getActiveTestimonials(),
+    getSiteSettings(),
   ]);
   const storyImage = featuredProducts.find((p) => p.image)?.image || null;
+  const brandInfo = settingsToBrand(settings);
 
   return (
     <>
@@ -118,7 +121,7 @@ export default async function AboutPage() {
                     Shop Now
                   </Link>
                   <a
-                    href={whatsappLink("Hi Taj Tailor, I would love to know more about your tailoring services.")}
+                    href={whatsappLink("Hi Taj Tailor, I would love to know more about your tailoring services.", brandInfo)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2.5 whitespace-nowrap rounded-full border border-emerald-500 bg-emerald-500 px-8 py-4 text-xs sm:text-sm font-bold uppercase tracking-wider text-white transition-all duration-300 hover:bg-emerald-600 hover:scale-[1.03] shadow-md hover:shadow-lg"
@@ -370,7 +373,7 @@ export default async function AboutPage() {
                     Shop Now
                   </Link>
                   <a
-                    href={whatsappLink("Hi Taj Tailor, I would love to place an order.")}
+                    href={whatsappLink("Hi Taj Tailor, I would love to place an order.", brandInfo)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-outline flex items-center justify-center gap-2 px-10 py-4 text-xs sm:text-sm font-bold uppercase tracking-wider hover:bg-gold-400/10 hover:border-gold-300 transition-all duration-300"

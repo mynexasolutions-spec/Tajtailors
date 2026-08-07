@@ -28,6 +28,7 @@ export default function GarmentTypeForm({ garmentType }) {
   const [state, formAction, pending] = useActionState(action, {});
   const [label, setLabel] = useState(garmentType?.label || "");
   const [isActive, setIsActive] = useState(garmentType?.is_active ?? true);
+  const [isFeatured, setIsFeatured] = useState(garmentType?.is_featured ?? false);
   const [imageUrl, setImageUrl] = useState(garmentType?.image_url || null);
   const [measurementKind, setMeasurementKind] = useState(normalizeMeasurementKind(garmentType?.measurement_kind));
   const [fields, setFields] = useState(garmentType?.fields || []);
@@ -48,6 +49,7 @@ export default function GarmentTypeForm({ garmentType }) {
     <form action={formAction} className="space-y-6">
       {isEditing && <input type="hidden" name="id" value={garmentType.id} />}
       <input type="hidden" name="is_active" value={isActive ? "on" : "off"} />
+      <input type="hidden" name="is_featured" value={isFeatured ? "on" : "off"} />
       <input type="hidden" name="image_url" value={imageUrl || ""} />
       <input type="hidden" name="fields" value={JSON.stringify(fields)} />
 
@@ -84,24 +86,7 @@ export default function GarmentTypeForm({ garmentType }) {
               )}
             </div>
 
-            <div>
-              <label className={labelClass}>Section Type</label>
-              <select
-                name="measurement_kind"
-                value={measurementKind}
-                onChange={(e) => setMeasurementKind(e.target.value)}
-                className={inputClass}
-              >
-                {MEASUREMENT_KIND_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-              <p className="mt-2 text-sm text-ink/35">
-                {isSet
-                  ? "This combines the canonical \"Kurta\" and \"Pajama\"/\"Pant\" garment types' own fields — configure those types individually instead of below."
-                  : "Configure this type's style options and measurement fields below."}
-              </p>
-            </div>
+            <input type="hidden" name="measurement_kind" value={measurementKind} />
 
             {!isSet && (
               <div>
@@ -184,6 +169,32 @@ export default function GarmentTypeForm({ garmentType }) {
                   <span
                     className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-500 ${
                       isActive ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </span>
+              </button>
+            </div>
+
+            <div>
+              <label className={labelClass}>Featured on Homepage</label>
+              <button
+                type="button"
+                onClick={() => setIsFeatured((f) => !f)}
+                className={`flex w-full items-center justify-between rounded-2xl border px-5 py-3.5 text-sm transition-all duration-500 ${
+                  isFeatured
+                    ? "border-gold-500/30 bg-gold-400/10 text-gold-700"
+                    : "border-ink/10 bg-ivory-deep text-ink/45"
+                }`}
+              >
+                {isFeatured ? "Featured" : "Regular"}
+                <span
+                  className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-500 ${
+                    isFeatured ? "bg-gold-500" : "bg-ink/15"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-500 ${
+                      isFeatured ? "translate-x-5" : "translate-x-0"
                     }`}
                   />
                 </span>

@@ -2,10 +2,13 @@ import { Suspense } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import LoginForm from "./_components/LoginForm";
+import { getSiteSettings } from "@/actions/settings";
+import { settingsToBrand } from "@/lib/constants";
 
 export const metadata = { title: "Log In" };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const brandInfo = settingsToBrand(await getSiteSettings());
   return (
     <>
       <SiteHeader />
@@ -19,7 +22,7 @@ export default function LoginPage() {
 
         <div className="relative z-10 flex w-full items-center justify-center">
           <Suspense fallback={null}>
-            <LoginForm />
+            <LoginForm brandInfo={brandInfo} />
           </Suspense>
         </div>
       </main>

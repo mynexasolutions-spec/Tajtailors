@@ -12,7 +12,7 @@ export default function LoadingSpinner({ fullScreen = true, label = "Loading" })
         <div className="absolute top-1/2 left-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-400/15 blur-[120px]" />
       </div>
 
-      <div className="relative flex h-28 w-28 items-center justify-center">
+      <div className="relative flex h-36 w-36 items-center justify-center">
         {/* Static ring */}
         <span className="absolute inset-0 rounded-full border-2 border-gold-400/15" />
         {/* Spinning gold arc */}
@@ -21,9 +21,9 @@ export default function LoadingSpinner({ fullScreen = true, label = "Loading" })
           style={{ animationDuration: "1.3s" }}
         />
         {/* Pulsing glow behind the logo */}
-        <span className="absolute h-16 w-16 animate-pulse rounded-full bg-gold-400/20 blur-xl" />
+        <span className="absolute h-24 w-24 animate-pulse rounded-full bg-gold-400/20 blur-xl" />
         {/* Logo */}
-        <div className="relative h-14 w-14 animate-floatSlow">
+        <div className="relative h-20 w-20 animate-floatSlow">
           <Image src="/logo.png" alt="Taj Tailor" fill className="object-contain" priority />
         </div>
       </div>

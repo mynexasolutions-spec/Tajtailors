@@ -70,6 +70,17 @@ export default function FieldsEditor({ fields, onChange }) {
               className={inputClass}
             />
           )}
+          <div className="flex items-center pt-0.5">
+            <label className="flex items-center gap-2 text-xs font-semibold text-ink/65 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={f.required !== false}
+                onChange={(e) => update(i, { required: e.target.checked })}
+                className="h-3.5 w-3.5 rounded border-ink/15 text-gold-500 focus:ring-gold-400/30"
+              />
+              Required / Mandatory Field
+            </label>
+          </div>
         </div>
       ))}
       <button type="button" onClick={add} className="flex items-center gap-1.5 text-sm text-gold-600 hover:text-gold-700">

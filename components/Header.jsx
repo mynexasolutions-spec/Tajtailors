@@ -207,10 +207,10 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
 
   return (
     <header className={`sticky top-0 z-40 transition-all duration-300 ${mobileOpen
-        ? "bg-white"
-        : scrolled
-          ? "bg-white/80 backdrop-blur-xl border-b border-gold-500/10 shadow-soft"
-          : "bg-white/95 backdrop-blur-lg border-b border-ink/5"
+      ? "bg-white"
+      : scrolled
+        ? "bg-white/80 backdrop-blur-xl border-b border-gold-500/10 shadow-soft"
+        : "bg-white/95 backdrop-blur-lg border-b border-ink/5"
       }`}>
       <UtilityBar brandInfo={brandInfo} announcement={announcement} />
 
@@ -252,12 +252,12 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
           <button
             onClick={() => setSearchOpen((o) => !o)}
             aria-label="Search"
-            className={`flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border transition-all duration-300 hover:scale-105 hover:shadow-gold ${searchOpen
+            className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border transition-all duration-300 hover:scale-105 hover:shadow-gold ${searchOpen
               ? "border-gold-400/40 bg-gold-400/10 text-gold-700"
               : "border-ink/10 bg-white text-ink/70 hover:border-gold-400/30 hover:bg-ivory-deep hover:text-gold-700"
               }`}
           >
-            <Search className="h-4 w-4 sm:h-5 sm:w-5" />
+            <Search className="h-5 w-5" />
           </button>
 
           {/* Account (Desktop) */}
@@ -299,9 +299,9 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
           <button
             onClick={() => setDrawerOpen(true)}
             aria-label="Open cart"
-            className="relative flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-ink/10 bg-white text-ink/70 transition-all duration-300 hover:border-gold-400/30 hover:bg-ivory-deep hover:text-gold-700 hover:scale-105 hover:shadow-gold"
+            className="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-ink/10 bg-white text-ink/70 transition-all duration-300 hover:border-gold-400/30 hover:bg-ivory-deep hover:text-gold-700 hover:scale-105 hover:shadow-gold"
           >
-            <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
+            <ShoppingBag className="h-5 w-5" />
             {cartCount > 0 && (
               <span className="absolute -right-1 -top-1 flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-gold-gradient text-[8px] sm:text-[9px] font-bold text-ink shadow-gold animate-bounce">
                 {cartCount}
@@ -313,9 +313,9 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
           <button
             onClick={() => setMobileOpen(true)}
             aria-label="Open menu"
-            className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-ink/10 bg-white text-ink/70 hover:border-gold-400/30 hover:text-gold-700 lg:hidden transition-all"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-ink/10 bg-white text-ink/70 hover:border-gold-400/30 hover:text-gold-700 lg:hidden transition-all"
           >
-            <Menu className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" />
+            <Menu className="h-4.5 w-4.5" />
           </button>
         </div>
       </div>
@@ -323,26 +323,26 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
       {/* Search Panel */}
       {searchOpen && (
         <div className="absolute inset-x-0 top-full z-30 border-b border-gold-400/15 bg-white/95 backdrop-blur-lg animate-fadeUp">
-          <form onSubmit={handleSearch} className="mx-auto flex max-w-wrap items-center gap-3 px-4 py-4 sm:px-6 md:px-12">
-            <Search className="h-4.5 w-4.5 shrink-0 text-gold-600/70" />
+          <form onSubmit={handleSearch} className="mx-auto flex max-w-wrap items-center gap-2 px-3 py-3 sm:gap-3 sm:px-6 md:px-12">
+            <Search className="h-4 w-4 shrink-0 text-gold-600/70" />
             <input
               autoFocus
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search fabrics, kurtas..."
-              className="flex-1 bg-transparent text-base text-ink placeholder:text-ink/30 focus:outline-none"
+              className="flex-1 bg-transparent text-sm sm:text-base text-ink placeholder:text-ink/30 focus:outline-none"
             />
-            <button type="submit" className="btn-gold px-5 py-2 text-xs font-semibold uppercase tracking-wide shrink-0">
+            <button type="submit" className="btn-gold px-3.5 py-1.5 text-[11px] sm:px-5 sm:py-2 sm:text-xs font-semibold uppercase tracking-wide shrink-0">
               Search
             </button>
             <button
               type="button"
               onClick={() => setSearchOpen(false)}
               aria-label="Close search"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-ink/10 text-ink/60 transition-all hover:border-gold-500/30 hover:text-gold-700"
+              className="flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full border border-ink/10 text-ink/60 transition-all hover:border-gold-500/30 hover:text-gold-700"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </button>
           </form>
         </div>

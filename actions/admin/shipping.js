@@ -7,7 +7,10 @@ import { SHIPPING_DEFAULTS } from "@/lib/constants";
 export async function getShippingSettings() {
   const supabase = createAdminClient();
   const { data } = await supabase.from("settings").select("shipping").eq("id", 1).maybeSingle();
-  return data?.shipping || SHIPPING_DEFAULTS;
+  // Merge with defaults (not just fall back when the row is entirely
+  // missing) so a field added after this row was first saved — like
+  // pickup_charge — still has a value instead of coming back undefined.
+  return { ...SHIPPING_DEFAULTS, ...(data?.shipping || {}) };
 }
 
 export async function updateShippingSettings(_prevState, formData) {
@@ -16,6 +19,7 @@ export async function updateShippingSettings(_prevState, formData) {
     flat_rate: Number(formData.get("flat_rate") || 0),
     free_threshold: Number(formData.get("free_threshold") || 0),
     cod_charge: Number(formData.get("cod_charge") || 0),
+    pickup_charge: Number(formData.get("pickup_charge") || 0),
   };
 
   const { error } = await supabase.from("settings").update({ shipping }).eq("id", 1);

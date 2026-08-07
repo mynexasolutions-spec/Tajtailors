@@ -63,9 +63,10 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
 
   const shippingCost = cartSubtotal >= shipping.free_threshold ? 0 : shipping.flat_rate;
   const codCost = paymentMethod === "COD" ? shipping.cod_charge : 0;
+  const pickupCost = needsPickup ? shipping.pickup_charge : 0;
   const couponDiscount = appliedCoupon?.discountAmount || 0;
   const qtyDiscount = calculateQuantityDiscount(cartCount, quantityDiscount);
-  const total = Math.max(0, cartSubtotal + shippingCost + codCost - couponDiscount - qtyDiscount);
+  const total = Math.max(0, cartSubtotal + shippingCost + codCost + pickupCost - couponDiscount - qtyDiscount);
 
   const handleApplyCoupon = async () => {
     if (!couponInput) return;
@@ -616,6 +617,12 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
               <div className="flex justify-between text-ink/65 font-semibold">
                 <span>COD Fee</span>
                 <span className="text-ink font-bold">₹{codCost}</span>
+              </div>
+            )}
+            {pickupCost > 0 && (
+              <div className="flex justify-between text-ink/65 font-semibold">
+                <span>Fabric Pickup Fee</span>
+                <span className="text-ink font-bold">₹{pickupCost}</span>
               </div>
             )}
             {qtyDiscount > 0 && (

@@ -1,10 +1,12 @@
 import PolicyLayout from "@/components/PolicyLayout";
-import { BRAND } from "@/lib/constants";
+import { settingsToBrand } from "@/lib/constants";
+import { getSiteSettings } from "@/actions/settings";
 import { RefreshCcw } from "lucide-react";
 
 export const metadata = { title: "Refund Policy" };
 
-export default function RefundPolicyPage() {
+export default async function RefundPolicyPage() {
+  const brandInfo = settingsToBrand(await getSiteSettings());
   return (
     <PolicyLayout title="Refund &amp; Return Policy" updated="July 2026" icon={RefreshCcw}>
       <p>Because stitched garments are custom-made to your measurements, we're unable to accept returns once stitching has started — but we stand behind our fit and quality on every order.</p>
@@ -18,7 +20,7 @@ export default function RefundPolicyPage() {
       <p>Orders can be cancelled free of charge any time before stitching begins or the item is dispatched. Once stitching has started or the order has shipped, it can no longer be cancelled.</p>
       <h2 className="font-display text-xl font-medium text-gold-200">Refund Timeline</h2>
       <p>Approved refunds for prepaid orders are credited to your original payment method within 5-7 business days.</p>
-      <p>For any of the above, reach us at {BRAND.email} or on WhatsApp at {BRAND.whatsappDisplay}.</p>
+      <p>For any of the above, reach us at {brandInfo.email} or on WhatsApp at {brandInfo.whatsappDisplay}.</p>
     </PolicyLayout>
   );
 }

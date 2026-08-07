@@ -48,7 +48,9 @@ export async function getProducts(filters = {}) {
 
     if (filters.categoryId) query = query.eq("category_id", filters.categoryId);
     if (filters.productType) query = query.eq("product_type", filters.productType);
+    if (filters.garmentType) query = query.eq("garment_type", filters.garmentType);
     if (filters.fabricType) query = query.eq("fabric_type", filters.fabricType);
+    if (filters.isFeatured !== undefined) query = query.eq("is_featured", filters.isFeatured);
     if (filters.badgeContains) query = query.ilike("badge", `%${filters.badgeContains}%`);
     if (filters.search) {
       const s = filters.search.trim();
@@ -147,8 +149,8 @@ export async function getProductBySlug(slug) {
         id, name, slug, category_id, is_active, badge, product_type, fabric_type, fabric_type_description, color, color_description,
         average_rating, review_count, short_description, description, featured_image_url,
         fabric_meters_required, garment_type,
-        product_images ( id, image_url, sort_order, variant_name ),
-        product_variants ( id, variant_name, price, original_price, stock_quantity, is_active, color_hex ),
+        product_images ( id, image_url, sort_order, variant_name, color_name ),
+        product_variants ( id, variant_name, price, original_price, stock_quantity, is_active, color_hex, color_name, size_name ),
         product_faqs ( id, question, answer, display_order )
       `)
       .eq("slug", slug)

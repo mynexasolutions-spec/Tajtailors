@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Heart, Eye } from "lucide-react";
 import Reveal from "@/components/Reveal";
+import SherwaniGlyph from "@/components/SherwaniGlyph";
 import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/context/ToastContext";
 
@@ -22,7 +23,7 @@ function KurtaCard({ kurta, delay }) {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { showToast } = useToast();
   const isWishlisted = isInWishlist(kurta.id || kurta.name);
-  const href = kurta.slug ? `/shop/${kurta.slug}` : "/shop";
+  const href = kurta.slug ? `/shop/${kurta.slug}` : "/shop?category=ecc54fc6-bd3a-4074-8a60-cb21d5d4e577";
 
   const handleWishlistToggle = (e) => {
     e.preventDefault();
@@ -50,14 +51,20 @@ function KurtaCard({ kurta, delay }) {
         className={`group flex flex-col overflow-hidden rounded-2xl border bg-white transition-all duration-300 hover:-translate-y-1.5 hover:border-gold-400/40 hover:shadow-gold ${kurta.isFeatured ? "border-gold-400/50 shadow-gold" : "border-ink/10"
           }`}
       >
-        <div className="relative aspect-[4/5] w-full overflow-hidden">
-          <Image
-            src={kurta.image}
-            alt={kurta.name}
-            fill
-            sizes="(max-width: 640px) 50vw, 33vw"
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
-          />
+        <div className="relative aspect-square w-full overflow-hidden">
+          {kurta.image ? (
+            <Image
+              src={kurta.image}
+              alt={kurta.name}
+              fill
+              sizes="(max-width: 640px) 50vw, 33vw"
+              className="object-contain bg-ivory-deep transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center bg-gradient-to-b from-white to-ivory-deep">
+              <SherwaniGlyph className="h-16 w-auto opacity-40 text-gold-500/60" />
+            </div>
+          )}
           {kurta.badge && (
             <span className="absolute left-3 top-3 z-20 rounded-full bg-gold-gradient px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-ink shadow-gold">
               {kurta.badge}
@@ -80,16 +87,6 @@ function KurtaCard({ kurta, delay }) {
         <div className="flex flex-1 flex-col p-3.5 sm:p-4">
           <h3 className="font-display text-base font-medium text-ink sm:text-lg">{kurta.name}</h3>
           <p className="mt-1 text-base font-semibold text-gold-600 sm:text-lg">₹{kurta.price.toLocaleString("en-IN")}</p>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {SIZES.map((size) => (
-              <span
-                key={size}
-                className="flex h-7 min-w-7 items-center justify-center rounded-md border border-ink/10 px-1.5 text-[11px] font-medium text-ink/60 transition-colors group-hover:border-gold-400/30"
-              >
-                {size}
-              </span>
-            ))}
-          </div>
         </div>
       </Link>
     </Reveal>
@@ -110,7 +107,7 @@ export default function KurtaCollection({ kurtas = [], eyebrow = "Ready When You
             <h2 className="section-heading mt-3 text-4xl sm:text-5xl md:text-6xl">{heading}</h2>
           </div>
           <Link
-            href="/shop"
+            href="/shop?category=ecc54fc6-bd3a-4074-8a60-cb21d5d4e577"
             className="group inline-flex shrink-0 items-center gap-2 rounded-full border border-gold-400/25 bg-white px-6 py-3 text-xs font-semibold uppercase tracking-widest text-gold-600 backdrop-blur-sm transition-all duration-300 hover:border-gold-500/50 hover:bg-gold-400/10 hover:text-gold-700"
           >
             View All Kurtas

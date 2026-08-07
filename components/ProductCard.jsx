@@ -49,7 +49,7 @@ export default function ProductCard({ product }) {
       href={`/shop/${product.slug}`}
       className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-ink/10 bg-white shadow-soft transition-all duration-500 hover:-translate-y-1 hover:border-gold-400/50 hover:shadow-gold"
     >
-      <div className="relative aspect-[3/4] shrink-0 overflow-hidden bg-ivory-deep">
+      <div className="relative aspect-square shrink-0 overflow-hidden bg-ivory-deep">
 
         {/* Soft background light behind product */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(202,161,75,0.05),transparent_70%)] pointer-events-none" />

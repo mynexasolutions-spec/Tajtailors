@@ -12,11 +12,12 @@ export default function FloatingButtonsClient({ whatsappHref, callHref }) {
   if (pathname?.includes("/choose/")) return null;
 
   return (
-    <div className="fixed bottom-5 right-4 sm:right-6 z-50 flex flex-col items-center gap-3 select-none">
+    <div className="fixed bottom-20 right-4 sm:bottom-5 sm:right-6 z-50 flex flex-col items-center gap-3 select-none">
+      {/* Bottom tab bar already has a "Call us now!" action on mobile. */}
       <a
         href={callHref}
         aria-label="Call us"
-        className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-gold-gradient p-3 sm:p-3.5 shadow-gold transition-transform hover:scale-110"
+        className="hidden sm:flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-gold-gradient p-3 sm:p-3.5 shadow-gold transition-transform hover:scale-110"
       >
         <Phone className="h-5 w-5 sm:h-6 sm:w-6 text-ink" />
       </a>

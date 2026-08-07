@@ -8,6 +8,12 @@ export async function getAllOrdersAdmin() {
   const { data } = await supabase
     .from("orders")
     .select("id, order_number, total_amount, order_status, payment_status, payment_method, created_at, profiles ( full_name, email )")
+    // Razorpay orders are created up front (before the payment modal even
+    // opens) so a receipt id exists to hand to Razorpay — but that means an
+    // abandoned/cancelled checkout would otherwise sit in the list forever
+    // as a ghost "pending" order. Hide those until the webhook resolves
+    // them to paid or failed; COD orders are legitimately pending and stay.
+    .or("payment_method.neq.RAZORPAY,payment_status.neq.pending")
     .order("created_at", { ascending: false });
 
   return data || [];
@@ -21,6 +27,8 @@ export async function getOrderById(id) {
       id, order_number, subtotal, shipping_cost, discount_amount, coupon_discount, quantity_discount, coupon_code, total_amount,
       payment_method, payment_status, order_status, created_at,
       pickup_required, pickup_preferred_date, pickup_notes,
+      tracking_number, courier_name, tracking_url, shipment_status,
+      pickup_waybill, pickup_tracking_url, pickup_status,
       profiles ( full_name, email, phone ),
       delivery_address:addresses!address_id ( full_name, phone, address_line_1, address_line_2, city, state, postal_code, country ),
       pickup_address:addresses!pickup_address_id ( full_name, phone, address_line_1, address_line_2, city, state, postal_code, country ),
@@ -28,7 +36,7 @@ export async function getOrderById(id) {
         id, product_name, variant_name, price_at_purchase, quantity, line_total,
         fabric_meters, measurement_type, measurements, notes,
         products:products!product_id ( featured_image_url ),
-        fabric:products!fabric_product_id ( name )
+        fabric:products!fabric_product_id ( name, product_code )
       )
     `)
     .eq("id", id)

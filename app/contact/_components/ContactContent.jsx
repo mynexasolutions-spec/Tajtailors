@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Phone, Copy, Check, ChevronDown, Clock, ArrowUpRight, Instagram, Facebook, Youtube } from "lucide-react";
-import { BRAND, whatsappLink } from "@/lib/constants";
+import { Mail, Phone, Copy, Check, ChevronDown, Clock, ArrowUpRight, Instagram, Facebook, Youtube, MapPin, Navigation } from "lucide-react";
+import { whatsappLink } from "@/lib/constants";
 import ContactForm from "./ContactForm";
 import Reveal from "@/components/Reveal";
 
@@ -25,14 +25,14 @@ const FAQS = [
   },
 ];
 
-export default function ContactContent() {
+export default function ContactContent({ mapEmbedSrc, mapLinkHref, brandInfo }) {
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
 
   const handleCopyEmail = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    navigator.clipboard.writeText(BRAND.email);
+    navigator.clipboard.writeText(brandInfo.email);
     setCopiedEmail(true);
     setTimeout(() => setCopiedEmail(false), 2500);
   };
@@ -82,7 +82,7 @@ export default function ContactContent() {
                       Email Us
                     </span>
                     <p className="font-display mt-0.5 text-base sm:text-lg text-ink group-hover:text-gold-700 transition-colors break-all">
-                      {BRAND.email}
+                      {brandInfo.email}
                     </p>
                   </div>
                 </div>
@@ -97,7 +97,7 @@ export default function ContactContent() {
               <div className="mt-6 flex items-center justify-between border-t border-ink/10 pt-4 text-sm text-ink/50">
                 <span className="font-semibold">For questions & support</span>
                 <a
-                  href={`mailto:${BRAND.email}`}
+                  href={`mailto:${brandInfo.email}`}
                   className="inline-flex items-center gap-1 text-gold-600 hover:text-gold-700 font-semibold"
                 >
                   Send email <ArrowUpRight className="h-3 w-3" />
@@ -109,7 +109,7 @@ export default function ContactContent() {
           {/* WhatsApp Card */}
           <Reveal delay={120} className="h-full">
             <a
-              href={whatsappLink("Hi Taj Tailor, I would like to inquire about your tailoring services.")}
+              href={whatsappLink("Hi Taj Tailor, I would like to inquire about your tailoring services.", brandInfo)}
               target="_blank"
               rel="noopener noreferrer"
               className="group block relative overflow-hidden rounded-[2rem] border border-gold-400/10 bg-white p-6 shadow-soft transition-all duration-500 hover:border-emerald-500/30 hover:shadow-[0_0_30px_rgba(16,185,129,0.06)] hover:-translate-y-1 h-full flex flex-col justify-between"
@@ -124,7 +124,7 @@ export default function ContactContent() {
                       WhatsApp Support
                     </span>
                     <p className="font-display mt-0.5 text-base sm:text-lg text-ink group-hover:text-emerald-700 transition-colors break-all">
-                      {BRAND.whatsappDisplay}
+                      {brandInfo.whatsappDisplay}
                     </p>
                   </div>
                 </div>
@@ -165,7 +165,7 @@ export default function ContactContent() {
               <span className="text-[10px] font-semibold uppercase tracking-wider text-ink/50 block mb-4">Follow Us</span>
               <div className="flex items-center gap-3">
                 <a
-                  href={BRAND.instagram}
+                  href={brandInfo.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
@@ -174,7 +174,7 @@ export default function ContactContent() {
                   <Instagram className="h-4.5 w-4.5" />
                 </a>
                 <a
-                  href={BRAND.facebook}
+                  href={brandInfo.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Facebook"
@@ -183,7 +183,7 @@ export default function ContactContent() {
                   <Facebook className="h-4.5 w-4.5" />
                 </a>
                 <a
-                  href={BRAND.youtube}
+                  href={brandInfo.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="YouTube"
@@ -205,6 +205,65 @@ export default function ContactContent() {
         </div>
 
       </div>
+
+      {/* Store Location */}
+      {mapEmbedSrc && (
+        <Reveal delay={160} className="relative mt-16 sm:mt-24">
+          {/* Ambient glow */}
+          <div className="pointer-events-none absolute -left-10 top-1/2 h-[380px] w-[420px] -translate-y-1/2 rounded-full bg-gold-400/10 blur-[130px]" />
+          <div className="pointer-events-none absolute -right-10 top-1/4 h-[300px] w-[340px] rounded-full bg-gold-600/5 blur-[120px]" />
+
+          <div className="group relative overflow-hidden rounded-[2.5rem] border border-gold-400/20 bg-white p-3 shadow-xl transition-all duration-500 hover:border-gold-500/40 hover:shadow-2xl sm:p-4">
+            {/* Top accent ribbon */}
+            <div className="absolute inset-x-0 top-0 h-[3px] bg-gold-gradient z-10" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(202,161,75,0.05),transparent_55%)]" />
+
+            {/* Header */}
+            <div className="relative z-10 flex flex-wrap items-center justify-between gap-4 px-2.5 pb-5 pt-3 sm:px-3">
+              <div className="flex items-center gap-3.5">
+                <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gold-gradient text-ink shadow-gold">
+                  <MapPin className="h-5.5 w-5.5" />
+                  <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500" />
+                  </span>
+                </span>
+                <div className="min-w-0">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold-600">Visit Our Store</span>
+                  <p className="font-display mt-0.5 text-xl sm:text-2xl text-ink font-semibold">Find Us on the Map</p>
+                </div>
+              </div>
+
+              {mapLinkHref && (
+                <a
+                  href={mapLinkHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-gold group/btn inline-flex items-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider shadow-gold hover:scale-[1.03] transition-all duration-300"
+                >
+                  <Navigation className="h-3.5 w-3.5 transition-transform duration-300 group-hover/btn:-translate-y-0.5 group-hover/btn:translate-x-0.5" />
+                  Get Directions
+                </a>
+              )}
+            </div>
+
+            {/* Map frame */}
+            <div className="relative overflow-hidden rounded-[1.75rem] border border-gold-400/15 shadow-inner">
+              <div className="pointer-events-none absolute inset-2 z-10 rounded-[1.4rem] border border-white/40 sm:inset-3" />
+              <iframe
+                src={mapEmbedSrc}
+                title="Taj Tailor store location"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="h-[340px] w-full grayscale-[15%] contrast-[1.05] transition-all duration-500 group-hover:grayscale-0 sm:h-[460px]"
+              />
+              <span className="pointer-events-none absolute bottom-4 left-4 z-20 inline-flex items-center gap-1.5 rounded-full bg-gold-gradient px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-ink shadow-gold">
+                <MapPin className="h-3 w-3" /> Taj Tailor
+              </span>
+            </div>
+          </div>
+        </Reveal>
+      )}
 
       {/* FAQ Section */}
       <div className="mt-16 sm:mt-28 border-t border-ink/10 pt-14 sm:pt-20">
