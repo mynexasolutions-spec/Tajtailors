@@ -36,7 +36,7 @@ export async function getOrderById(id) {
       order_items (
         id, product_name, variant_name, price_at_purchase, quantity, line_total,
         fabric_meters, measurement_type, measurements, notes,
-        products:products!product_id ( featured_image_url ),
+        products:products!product_id ( featured_image_url, product_type ),
         fabric:products!fabric_product_id ( name, product_code )
       )
     `)

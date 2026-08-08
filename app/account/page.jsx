@@ -22,7 +22,7 @@ export default async function AccountPage({ searchParams }) {
 
   const { data: orders } = await supabase
     .from("orders")
-    .select("id, order_number, total_amount, order_status, payment_status, payment_method, created_at, tracking_number, tracking_url, courier_name, order_items ( product_name, variant_name, quantity )")
+    .select("id, order_number, total_amount, order_status, payment_status, payment_method, created_at, tracking_number, tracking_url, courier_name, order_items ( product_name, variant_name, quantity, products:products!product_id ( product_type ) )")
     .eq("user_id", user.id)
     // Hide abandoned/cancelled Razorpay checkouts (order row exists before
     // the payment modal opens) until the webhook resolves them to paid or

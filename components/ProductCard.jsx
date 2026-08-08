@@ -20,6 +20,7 @@ export default function ProductCard({ product }) {
     addToCart({
       variantId: product.variantId,
       productId: product.id,
+      productType: product.productType,
       slug: product.slug,
       name: product.name,
       variantName: product.variantName,
@@ -82,10 +83,10 @@ export default function ProductCard({ product }) {
           type="button"
           onClick={handleWishlistToggle}
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-          className="absolute right-3.5 top-3.5 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-ink/10 bg-white/80 backdrop-blur-md text-ink transition-all duration-300 hover:scale-110 shadow-sm"
+          className="absolute right-2.5 top-2.5 sm:right-3.5 sm:top-3.5 z-20 flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full border border-ink/10 bg-white/80 backdrop-blur-md text-ink transition-all duration-300 hover:scale-110 shadow-sm"
         >
           <Heart
-            className={`h-4.5 w-4.5 transition-colors duration-300 ${
+            className={`h-3.5 w-3.5 sm:h-4.5 sm:w-4.5 transition-colors duration-300 ${
               isWishlisted
                 ? "fill-red-500 text-red-500"
                 : "text-ink/60 hover:text-red-500"
@@ -102,9 +103,9 @@ export default function ProductCard({ product }) {
           <button
             onClick={handleQuickAdd}
             aria-label={`Add ${product.name} to bag`}
-            className="absolute bottom-3.5 right-3.5 flex h-10 w-10 items-center justify-center rounded-full bg-gold-gradient text-ink opacity-100 shadow-gold transition-all duration-300 md:opacity-0 md:group-hover:opacity-100 hover:scale-110"
+            className="absolute bottom-2.5 right-2.5 sm:bottom-3.5 sm:right-3.5 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-gold-gradient text-ink opacity-100 shadow-gold transition-all duration-300 md:opacity-0 md:group-hover:opacity-100 hover:scale-110"
           >
-            <ShoppingBag className="h-4.5 w-4.5 text-ink" />
+            <ShoppingBag className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5 text-ink" />
           </button>
         )}
       </div>

@@ -1,13 +1,21 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import LoginForm from "./_components/LoginForm";
 import { getSiteSettings } from "@/actions/settings";
 import { settingsToBrand } from "@/lib/constants";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Log In" };
 
 export default async function LoginPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) redirect("/account");
+
   const brandInfo = settingsToBrand(await getSiteSettings());
   return (
     <>

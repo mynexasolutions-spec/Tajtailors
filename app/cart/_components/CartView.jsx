@@ -48,15 +48,33 @@ export default function CartView({ quantityDiscount }) {
                 </button>
               </div>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 rounded-full border border-ink/10 px-3 py-1.5">
-                  <button onClick={() => updateQuantity((item.cartKey || item.variantId), item.quantity - 1)} aria-label="Decrease">
-                    <Minus className="h-3.5 w-3.5 text-ink/60 hover:text-gold-600" />
-                  </button>
-                  <span className="w-5 text-center text-sm text-ink">{item.quantity}</span>
-                  <button onClick={() => updateQuantity((item.cartKey || item.variantId), item.quantity + 1)} aria-label="Increase">
-                    <Plus className="h-3.5 w-3.5 text-ink/60 hover:text-gold-600" />
-                  </button>
-                </div>
+                {item.productType === "fabric" ? (
+                  <div className="flex items-center gap-1.5 rounded-xl border-2 border-gold-400/40 px-2.5 py-1">
+                    <input
+                      type="number"
+                      min={1}
+                      step="0.5"
+                      value={item.quantity}
+                      onChange={(e) =>
+                        e.target.value !== "" &&
+                        updateQuantity((item.cartKey || item.variantId), Math.max(1, Number(e.target.value)))
+                      }
+                      className="w-14 rounded-md border border-ink/15 bg-white px-1 py-1 text-center text-sm font-semibold text-ink focus:border-gold-400/50 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      aria-label="Meters needed"
+                    />
+                    <span className="text-xs font-semibold text-ink/60">m</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 rounded-full border border-ink/10 px-3 py-1.5">
+                    <button onClick={() => updateQuantity((item.cartKey || item.variantId), item.quantity - 1)} aria-label="Decrease">
+                      <Minus className="h-3.5 w-3.5 text-ink/60 hover:text-gold-600" />
+                    </button>
+                    <span className="w-5 text-center text-sm text-ink">{item.quantity}</span>
+                    <button onClick={() => updateQuantity((item.cartKey || item.variantId), item.quantity + 1)} aria-label="Increase">
+                      <Plus className="h-3.5 w-3.5 text-ink/60 hover:text-gold-600" />
+                    </button>
+                  </div>
+                )}
                 <span className="font-semibold text-ink">
                   ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                 </span>

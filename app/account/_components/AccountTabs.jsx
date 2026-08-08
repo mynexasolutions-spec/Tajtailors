@@ -118,6 +118,7 @@ export default function AccountTabs({ profile, orders, initialTab = "orders" }) 
                     {order.order_items.map((item, i) => (
                       <li key={i}>
                         {item.product_name} {item.variant_name ? `(${item.variant_name})` : ""} × {item.quantity}
+                        {item.products?.product_type === "fabric" ? "m" : ""}
                       </li>
                     ))}
                   </ul>

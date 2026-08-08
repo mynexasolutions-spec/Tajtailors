@@ -339,10 +339,11 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
   // next to the sticky gallery, which read as confusing/disconnected.
   // step=measure arrives from the style picker's "Continue" — the customer
   // already browsed styles there, so landing back on product details next
-  // felt redundant; jump straight into measurements instead.
-  const [activeTab, setActiveTab] = useState(
-    searchParams.get("step") === "measure" || preselectedFabric ? "measure" : "fabric"
-  );
+  // felt redundant; jump straight into measurements instead. Arriving with a
+  // preselected fabric still opens on the fabric step (not measure), so the
+  // customer sees the color + meters-needed panel and can adjust it before
+  // moving on, instead of skipping straight past it.
+  const [activeTab, setActiveTab] = useState(searchParams.get("step") === "measure" ? "measure" : "fabric");
 
   if (!stitchingVariant) {
     return (
@@ -368,7 +369,9 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
     setOwnFabric(false);
     setCustomMeters(meters);
     setShowFabricPicker(false);
-    setActiveTab("measure");
+    // Stay on the fabric step so the customer picks a color and confirms
+    // how many meters to cut before moving to measurements — jumping
+    // straight to "measure" skipped that entirely.
   };
   const chooseOwnFabric = () => {
     setSelectedFabricId(null);
@@ -506,13 +509,15 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
             onClick={() => setShowFabricPicker(true)}
             className="group flex w-full items-center gap-3.5 rounded-2xl border border-gold-400/30 bg-white p-3.5 text-left shadow-soft transition-all duration-300 hover:border-gold-400/50 hover:shadow-gold"
           >
-            <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white border border-ink/10">
-              {selectedVariant?.image ? (
-                <Image src={selectedVariant.image} alt="" fill sizes="56px" className="object-cover" />
-              ) : (
-                <PackageCheck className="h-6 w-6 text-gold-600" />
-              )}
-              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-gold-gradient text-ink shadow-gold">
+            <span className="relative flex h-14 w-14 shrink-0 items-center justify-center">
+              <span className="relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl bg-white border border-ink/10">
+                {selectedVariant?.image ? (
+                  <Image src={selectedVariant.image} alt="" fill sizes="56px" className="object-cover" />
+                ) : (
+                  <PackageCheck className="h-6 w-6 text-gold-600" />
+                )}
+              </span>
+              <span className="absolute -right-1 -top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-gold-gradient text-ink shadow-gold">
                 <Check className="h-3 w-3" strokeWidth={2.75} />
               </span>
             </span>
@@ -651,9 +656,9 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold-600">Fabric Needed</p>
-                <p className="mt-1 text-xs font-semibold text-ink/55">Standard is {meters}m — increase it if you need extra.</p>
+                <p className="mt-1 text-sm font-semibold text-ink/55">Standard is {meters}m — increase it if you need extra.</p>
               </div>
-              <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-gold-400/20 bg-white px-3 py-1.5">
+              <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-gold-400/20 bg-white px-3.5 py-2">
                 <input
                   type="number"
                   step="0.5"
@@ -661,12 +666,20 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
                   value={customMeters}
                   onChange={(e) => setCustomMeters(e.target.value === "" ? "" : Number(e.target.value))}
                   onBlur={(e) => setCustomMeters(Math.max(meters, Number(e.target.value) || meters))}
-                  className="w-14 rounded-lg border-none bg-transparent text-center text-sm font-semibold text-ink focus:outline-none focus:ring-1 focus:ring-gold-400/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-16 rounded-lg border-none bg-transparent text-center text-base font-semibold text-ink focus:outline-none focus:ring-1 focus:ring-gold-400/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   aria-label="Fabric meters needed"
                 />
-                <span className="text-sm font-semibold text-ink">m</span>
+                <span className="text-base font-semibold text-ink">m</span>
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("measure")}
+              className="btn-gold w-full py-3 text-xs font-semibold tracking-widest uppercase flex items-center justify-center gap-2"
+            >
+              Continue to Measurements <ArrowRight className="h-3.5 w-3.5" />
+            </button>
           </div>
         )}
       </div>
@@ -946,23 +959,40 @@ function SimplePurchasePanel({ product, variants, compatibleOutfits, garmentType
         <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-gold-600">
           {product.product_type === "fabric" ? "Meters" : "Quantity"}
         </p>
-        <div className="flex w-fit items-center justify-between rounded-full border border-gold-400/20 bg-white px-5 py-3">
-          <button
-            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="text-ink/55 hover:text-gold-700 transition-colors"
-            aria-label="Decrease quantity"
-          >
-            <Minus className="h-3.5 w-3.5" />
-          </button>
-          <span className="w-8 text-center text-sm font-semibold text-ink">{quantity}</span>
-          <button
-            onClick={() => setQuantity((q) => q + 1)}
-            className="text-ink/55 hover:text-gold-700 transition-colors"
-            aria-label="Increase quantity"
-          >
-            <Plus className="h-3.5 w-3.5" />
-          </button>
-        </div>
+        {product.product_type === "fabric" ? (
+          <div className="flex w-fit items-center gap-2 rounded-2xl border-2 border-gold-400/40 bg-white px-4 py-2.5 shadow-soft">
+            <input
+              type="number"
+              min={1}
+              step="0.5"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value === "" ? "" : Number(e.target.value))}
+              onBlur={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
+              placeholder="0"
+              className="w-20 rounded-lg border border-ink/15 bg-white px-2 py-1.5 text-center text-base font-bold text-ink focus:border-gold-400/50 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              aria-label="Enter meters needed"
+            />
+            <span className="text-sm font-bold text-ink/60">meters</span>
+          </div>
+        ) : (
+          <div className="flex w-fit items-center justify-between rounded-full border border-gold-400/20 bg-white px-5 py-3">
+            <button
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              className="text-ink/55 hover:text-gold-700 transition-colors"
+              aria-label="Decrease quantity"
+            >
+              <Minus className="h-3.5 w-3.5" />
+            </button>
+            <span className="w-8 text-center text-sm font-semibold text-ink">{quantity}</span>
+            <button
+              onClick={() => setQuantity((q) => q + 1)}
+              className="text-ink/55 hover:text-gold-700 transition-colors"
+              aria-label="Increase quantity"
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
         {product.product_type === "fabric" && (
           <p className="mt-2 text-sm sm:text-base font-bold text-ink/70">
             Total: ₹{(selected.price * quantity).toLocaleString("en-IN")} for {quantity}m

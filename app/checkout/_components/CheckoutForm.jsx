@@ -582,26 +582,44 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
                     </p>
                   )}
                   <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center gap-3 rounded-full border border-gold-400/20 bg-white px-3 py-1">
-                      <button
-                        type="button"
-                        onClick={() => item.quantity > 1 && updateQuantity((item.cartKey || item.variantId), item.quantity - 1)}
-                        disabled={item.quantity <= 1}
-                        className="text-ink/50 hover:text-gold-600 transition-colors p-0.5 disabled:opacity-30 disabled:hover:text-ink/50"
-                        aria-label="Decrease quantity"
-                      >
-                        <Minus className="h-3 w-3" />
-                      </button>
-                      <span className="w-4 text-center text-xs font-semibold text-ink">{item.quantity}</span>
-                      <button
-                        type="button"
-                        onClick={() => updateQuantity((item.cartKey || item.variantId), item.quantity + 1)}
-                        className="text-ink/50 hover:text-gold-600 transition-colors p-0.5"
-                        aria-label="Increase quantity"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </button>
-                    </div>
+                    {item.productType === "fabric" ? (
+                      <div className="flex items-center gap-1.5 rounded-xl border-2 border-gold-400/40 bg-white px-2.5 py-1">
+                        <input
+                          type="number"
+                          min={1}
+                          step="0.5"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            e.target.value !== "" &&
+                            updateQuantity((item.cartKey || item.variantId), Math.max(1, Number(e.target.value)))
+                          }
+                          className="w-12 rounded-md border border-ink/15 bg-white px-1 py-1 text-center text-xs font-bold text-ink focus:border-gold-400/50 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          aria-label="Meters needed"
+                        />
+                        <span className="text-[11px] font-bold text-ink/60">m</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3 rounded-full border border-gold-400/20 bg-white px-3 py-1">
+                        <button
+                          type="button"
+                          onClick={() => item.quantity > 1 && updateQuantity((item.cartKey || item.variantId), item.quantity - 1)}
+                          disabled={item.quantity <= 1}
+                          className="text-ink/50 hover:text-gold-600 transition-colors p-0.5 disabled:opacity-30 disabled:hover:text-ink/50"
+                          aria-label="Decrease quantity"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="w-4 text-center text-xs font-semibold text-ink">{item.quantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity((item.cartKey || item.variantId), item.quantity + 1)}
+                          className="text-ink/50 hover:text-gold-600 transition-colors p-0.5"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
                     <span className="text-base font-semibold text-gold-700">
                       ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                     </span>

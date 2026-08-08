@@ -113,7 +113,10 @@ export default async function AdminOrderDetailPage({ params }) {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-ink font-bold text-base">{item.product_name}</p>
-                      <p className="text-ink/65 font-semibold text-sm">{item.variant_name} × {item.quantity}</p>
+                      <p className="text-ink/65 font-semibold text-sm">
+                        {item.variant_name} × {item.quantity}
+                        {item.products?.product_type === "fabric" ? "m" : ""}
+                      </p>
                     </div>
                     <span className="shrink-0 font-bold text-ink text-base">₹{Number(item.line_total).toLocaleString("en-IN")}</span>
                   </div>

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Menu,
   X,
@@ -55,6 +55,70 @@ function Logo({ scrolled }) {
   );
 }
 
+// Header links to /shop carry their own ?type= (e.g. "Buy Fabric & Stitch" ->
+// /shop?type=fabric), which pathname alone can't distinguish — plain "Shop"
+// and the two ?type= links would otherwise all read as active together since
+// they share the same pathname. Compare the query too, and require an exact
+// match (no stray params) so a link is only "active" when the current URL is
+// really that link, not a superset of it.
+function computeIsActive(href, pathname, searchParams) {
+  const [linkPath, linkQuery = ""] = href.split("?");
+  if (pathname !== linkPath) return false;
+  const linkParams = new URLSearchParams(linkQuery);
+  const currentParams = new URLSearchParams(searchParams.toString());
+  linkParams.delete("page");
+  currentParams.delete("page");
+  return linkParams.toString() === currentParams.toString();
+}
+
+function DesktopNavLink({ link, isActive }) {
+  return (
+    <Link
+      href={link.href}
+      className={`group/link relative rounded-full px-4 py-2 text-[13px] font-medium uppercase tracking-wide transition-all duration-300 ${isActive ? "text-gold-700 bg-gold-400/10" : "text-ink/70 hover:text-gold-700 hover:bg-gold-400/5"
+        }`}
+    >
+      {link.label}
+      {isActive ? (
+        <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold-500 shadow-gold animate-pulse" />
+      ) : (
+        <span className="absolute bottom-0.5 left-1/2 h-px w-0 -translate-x-1/2 bg-gradient-to-r from-transparent via-gold-300 to-transparent transition-all duration-300 group-hover/link:w-2/3" />
+      )}
+    </Link>
+  );
+}
+
+// useSearchParams needs its own Suspense boundary (Next.js app router
+// requirement), so the active-state lookup lives in this small wrapper
+// instead of the main Header body — the fallback below renders the same
+// link, just without the active state, so there's nothing to flash.
+function DesktopNavLinkActive({ link }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  return <DesktopNavLink link={link} isActive={computeIsActive(link.href, pathname, searchParams)} />;
+}
+
+function MobileNavLink({ link, isActive, onClick }) {
+  return (
+    <Link
+      href={link.href}
+      onClick={onClick}
+      className={`rounded-xl px-4 py-3 font-display text-lg tracking-wide transition-all ${isActive
+        ? "bg-gold-400/10 text-gold-700 font-medium"
+        : "text-ink hover:bg-ivory-deep hover:text-gold-700"
+        }`}
+    >
+      {link.label}
+    </Link>
+  );
+}
+
+function MobileNavLinkActive({ link, onClick }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  return <MobileNavLink link={link} isActive={computeIsActive(link.href, pathname, searchParams)} onClick={onClick} />;
+}
+
 export default function Header({ announcement, isLoggedIn = false, brandInfo = BRAND }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -84,6 +148,7 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
 
   const NAV_LINKS = [
     { label: "Home", href: "/" },
+    { label: "Shop", href: "/shop" },
     {
       label: "Buy Fabric & Stitch",
       href: "/shop?type=fabric",
@@ -224,24 +289,11 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
 
         {/* Center Links (Desktop) */}
         <nav className="hidden items-center gap-1 lg:flex">
-          {NAV_LINKS.map((link) => {
-            const isActive = pathname === link.href;
-            return (
-              <Link
-                key={link.label}
-                href={link.href}
-                className={`group/link relative rounded-full px-4 py-2 text-[13px] font-medium uppercase tracking-wide transition-all duration-300 ${isActive ? "text-gold-700 bg-gold-400/10" : "text-ink/70 hover:text-gold-700 hover:bg-gold-400/5"
-                  }`}
-              >
-                {link.label}
-                {isActive ? (
-                  <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-gold-500 shadow-gold animate-pulse" />
-                ) : (
-                  <span className="absolute bottom-0.5 left-1/2 h-px w-0 -translate-x-1/2 bg-gradient-to-r from-transparent via-gold-300 to-transparent transition-all duration-300 group-hover/link:w-2/3" />
-                )}
-              </Link>
-            );
-          })}
+          {NAV_LINKS.map((link) => (
+            <Suspense key={link.label} fallback={<DesktopNavLink link={link} isActive={false} />}>
+              <DesktopNavLinkActive link={link} />
+            </Suspense>
+          ))}
         </nav>
 
         {/* Right Side Icons */}
@@ -367,17 +419,12 @@ export default function Header({ announcement, isLoggedIn = false, brandInfo = B
 
           <nav className="flex flex-col gap-2 px-6 py-6 overflow-y-auto max-h-[80vh]">
             {NAV_LINKS.map((link) => (
-              <Link
+              <Suspense
                 key={link.label}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className={`rounded-xl px-4 py-3 font-display text-lg tracking-wide transition-all ${pathname === link.href
-                  ? "bg-gold-400/10 text-gold-700 font-medium"
-                  : "text-ink hover:bg-ivory-deep hover:text-gold-700"
-                  }`}
+                fallback={<MobileNavLink link={link} isActive={false} onClick={() => setMobileOpen(false)} />}
               >
-                {link.label}
-              </Link>
+                <MobileNavLinkActive link={link} onClick={() => setMobileOpen(false)} />
+              </Suspense>
             ))}
 
             <Link

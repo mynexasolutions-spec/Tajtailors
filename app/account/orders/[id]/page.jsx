@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Package, MapPin, CreditCard, CheckCircle2 } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
+import SherwaniGlyph from "@/components/SherwaniGlyph";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import { createClient } from "@/lib/supabase/server";
@@ -28,7 +30,7 @@ export default async function OrderDetailPage({ params }) {
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "id, order_number, subtotal, shipping_cost, discount_amount, coupon_discount, quantity_discount, coupon_code, total_amount, payment_method, payment_status, order_status, created_at, tracking_number, courier_name, tracking_url, shipment_status, pickup_required, pickup_waybill, pickup_tracking_url, pickup_status, order_items ( id, product_name, variant_name, quantity, line_total ), addresses:addresses!address_id ( full_name, phone, address_line_1, address_line_2, city, state, postal_code )"
+      "id, order_number, subtotal, shipping_cost, discount_amount, coupon_discount, quantity_discount, coupon_code, total_amount, payment_method, payment_status, order_status, created_at, tracking_number, courier_name, tracking_url, shipment_status, pickup_required, pickup_waybill, pickup_tracking_url, pickup_status, order_items ( id, product_name, variant_name, quantity, line_total, products:products!product_id ( product_type, featured_image_url ) ), addresses:addresses!address_id ( full_name, phone, address_line_1, address_line_2, city, state, postal_code )"
     )
     .eq("id", id)
     .eq("user_id", user.id)
@@ -86,11 +88,21 @@ export default async function OrderDetailPage({ params }) {
               </div>
               <ul className="divide-y divide-ink/10 relative z-10">
                 {order.order_items.map((item) => (
-                  <li key={item.id} className="flex items-center justify-between gap-3 py-4 text-base">
-                    <div className="min-w-0">
+                  <li key={item.id} className="flex items-center gap-3 py-4 text-base">
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-ink/10 bg-ivory-deep">
+                      {item.products?.featured_image_url ? (
+                        <Image src={item.products.featured_image_url} alt="" fill sizes="56px" className="object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                          <SherwaniGlyph className="h-7 w-auto text-ink/25" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
                       <p className="text-ink font-bold">{item.product_name}</p>
                       <p className="text-ink/60 font-semibold mt-1 text-sm">
-                        {item.variant_name ? `${item.variant_name} · ` : ""}Qty {item.quantity}
+                        {item.variant_name ? `${item.variant_name} · ` : ""}
+                        {item.products?.product_type === "fabric" ? `${item.quantity}m` : `Qty ${item.quantity}`}
                       </p>
                     </div>
                     <span className="shrink-0 text-lg font-bold text-gold-700">

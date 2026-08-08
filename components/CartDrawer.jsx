@@ -116,25 +116,43 @@ export default function CartDrawer({ quantityDiscount }) {
 
                     <div className="mt-3 flex items-center justify-between">
                       {/* Quantity Controls */}
-                      <div className="flex items-center gap-3 rounded-full border border-gold-400/20 bg-white px-3 py-1.5">
-                        <button
-                          onClick={() => updateQuantity((item.cartKey || item.variantId), item.quantity - 1)}
-                          className="text-ink/50 hover:text-gold-700 transition-colors p-0.5"
-                          aria-label="Decrease quantity"
-                        >
-                          <Minus className="h-3 w-3" />
-                        </button>
-                        <span className="w-4 text-center text-xs font-bold text-ink">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity((item.cartKey || item.variantId), item.quantity + 1)}
-                          className="text-ink/50 hover:text-gold-700 transition-colors p-0.5"
-                          aria-label="Increase quantity"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </button>
-                      </div>
+                      {item.productType === "fabric" ? (
+                        <div className="flex items-center gap-1.5 rounded-xl border-2 border-gold-400/40 bg-white px-2.5 py-1">
+                          <input
+                            type="number"
+                            min={1}
+                            step="0.5"
+                            value={item.quantity}
+                            onChange={(e) =>
+                              e.target.value !== "" &&
+                              updateQuantity((item.cartKey || item.variantId), Math.max(1, Number(e.target.value)))
+                            }
+                            className="w-12 rounded-md border border-ink/15 bg-white px-1 py-1 text-center text-xs font-bold text-ink focus:border-gold-400/50 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            aria-label="Meters needed"
+                          />
+                          <span className="text-[11px] font-bold text-ink/60">m</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-3 rounded-full border border-gold-400/20 bg-white px-3 py-1.5">
+                          <button
+                            onClick={() => updateQuantity((item.cartKey || item.variantId), item.quantity - 1)}
+                            className="text-ink/50 hover:text-gold-700 transition-colors p-0.5"
+                            aria-label="Decrease quantity"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </button>
+                          <span className="w-4 text-center text-xs font-bold text-ink">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() => updateQuantity((item.cartKey || item.variantId), item.quantity + 1)}
+                            className="text-ink/50 hover:text-gold-700 transition-colors p-0.5"
+                            aria-label="Increase quantity"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
 
                       {/* Product Price */}
                       <span className="text-base sm:text-lg font-bold text-gold-700">

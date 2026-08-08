@@ -17,15 +17,20 @@ export default function OutfitPicker({ options, fabricId, variantId }) {
 
   const goToSelected = () => {
     if (!selected) return;
-    // step=measure jumps straight to the Measurements tab on the product
-    // page instead of landing on its gallery/description first — picking a
-    // style here already IS the "browsing" step, so re-showing product
-    // details next just felt like a detour. A separate "Details" link on
-    // each card covers customers who do want the full description/reviews.
-    const params = new URLSearchParams({ step: "measure" });
+    const params = new URLSearchParams();
     if (fabricId) {
+      // Fabric was already chosen (fabric-first flow) — land on the Fabric
+      // step so the customer can confirm color/meters-needed before moving
+      // on, instead of skipping straight past that.
       params.set("fabric", fabricId);
       params.set("variant", variantId);
+    } else {
+      // No fabric picked yet — step=measure jumps straight to the
+      // Measurements tab instead of landing on the gallery/description
+      // first, since picking a style here already IS the "browsing" step.
+      // A separate "Details" link on each card covers anyone who still
+      // wants the full description/reviews.
+      params.set("step", "measure");
     }
     router.push(`/shop/${selected.slug}?${params.toString()}`);
   };
