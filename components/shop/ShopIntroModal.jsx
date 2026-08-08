@@ -1,48 +1,32 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Shirt, Scissors, PackageCheck } from "lucide-react";
+import { X, Shirt, PackageCheck, Truck, CheckCircle2, ChevronDown } from "lucide-react";
 
-const WAYS = [
+const STEPS = [
   {
-    step: 1,
     icon: Shirt,
-    title: "Buy Fabric & Stitch",
-    desc: "Choose a fabric from our collection, pick an outfit, share your measurements — we'll stitch and deliver it to you.",
-    highlight: true,
-    badgeLabel: "Recommended",
+    title: "Pick Any Outfit",
+    desc: "Browse our outfits — Kurta, Pajama, Sherwani and more — and choose the one you want stitched.",
   },
   {
-    step: 2,
-    icon: Scissors,
-    title: "Stitch My Fabric",
-    desc: "Got your own fabric? Send it to us — our courier picks it up from your doorstep — and we'll tailor it to your exact measurements.",
-    highlight: false,
-    highlightWords: "our courier picks it up from your doorstep",
-  },
-  {
-    step: 3,
     icon: PackageCheck,
-    title: "Ready-Made",
-    desc: "In a hurry? Pick from our ready-to-wear kurtas — already stitched and ready to ship.",
-    highlight: false,
+    title: "Select “I'll Send My Own Fabric”",
+    desc: "This option shows up right where you'd normally pick a fabric — tap it instead.",
+    highlight: true,
+    badgeLabel: "That's the one",
+  },
+  {
+    icon: Truck,
+    title: "We Pick It Up",
+    desc: "Our courier collects the fabric straight from your doorstep — no need to visit us.",
+  },
+  {
+    icon: CheckCircle2,
+    title: "Stitched & Delivered",
+    desc: "We tailor it to your exact measurements and deliver the finished outfit home.",
   },
 ];
-
-// Renders `desc`, wrapping `highlightWords` (if present and matched) in a
-// gold-emphasis span — keeps the "we pick it up" promise from getting lost
-// in a paragraph of otherwise equal-weight text.
-function HighlightedDesc({ desc, highlightWords }) {
-  if (!highlightWords || !desc.includes(highlightWords)) return desc;
-  const [before, after] = desc.split(highlightWords);
-  return (
-    <>
-      {before}
-      <span className="font-bold text-gold-700">{highlightWords}</span>
-      {after}
-    </>
-  );
-}
 
 export default function ShopIntroModal({ show }) {
   const [open, setOpen] = useState(false);
@@ -91,55 +75,52 @@ export default function ShopIntroModal({ show }) {
 
           <div className="max-h-[85vh] overflow-y-auto p-6 sm:p-8">
             <p className="eyebrow text-xs font-bold tracking-[0.25em] text-gold-600 uppercase">
-              <span className="gold-line" /> Welcome to Taj Tailor
+              <span className="gold-line" /> Great News
             </p>
             <h2 className="mt-3 font-display text-2xl sm:text-3xl font-bold leading-tight text-ink">
-              3 Ways to Get Your Perfect Fit
+              You Can Send <span className="text-gold-700">Your Own Fabric</span> Too!
             </h2>
             <p className="mt-2 text-sm font-semibold text-ink/55">
-              Pick whichever suits you — here's how each one works.
+              No need to buy fabric from us — here's how it works.
             </p>
 
-            <div className="mt-6 space-y-3">
-              {WAYS.map((way, i) => (
-                <div
-                  key={way.title}
-                  className={`relative flex gap-3.5 rounded-2xl p-4 transition-all duration-300 ${
-                    entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
-                  } ${
-                    way.highlight
-                      ? "border-2 border-gold-400/50 bg-gold-400/[0.05] shadow-gold"
-                      : "border border-ink/10 bg-white hover:border-gold-400/30 hover:bg-gold-400/[0.03]"
-                  }`}
-                  style={{ transitionDelay: entered ? `${120 + i * 90}ms` : "0ms" }}
-                >
-                  {way.highlight && (
-                    <span className="absolute -top-2.5 right-4 rounded-full bg-gold-gradient px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-ink shadow-gold">
-                      {way.badgeLabel}
-                    </span>
-                  )}
-
-                  <span
-                    className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                      way.highlight ? "bg-gold-gradient text-ink shadow-gold" : "bg-gold-400/10 text-gold-600"
-                    }`}
+            <div className="mt-7">
+              {STEPS.map((step, i) => (
+                <div key={step.title}>
+                  <div
+                    className={`relative flex gap-4 rounded-2xl transition-all duration-300 ${
+                      entered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3"
+                    } ${step.highlight ? "border border-gold-400/40 bg-gold-400/[0.04] p-3" : "p-3"}`}
+                    style={{ transitionDelay: entered ? `${120 + i * 100}ms` : "0ms" }}
                   >
-                    <way.icon className="h-5 w-5" strokeWidth={1.75} />
                     <span
-                      className={`absolute -bottom-1.5 -right-1.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold leading-none ${
-                        way.highlight ? "bg-ink text-gold-200" : "bg-gold-500 text-white"
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${
+                        step.highlight ? "bg-gold-gradient text-ink shadow-gold" : "bg-gold-400/10 text-gold-600"
                       }`}
                     >
-                      {way.step}
+                      <step.icon className="h-5 w-5" strokeWidth={1.75} />
                     </span>
-                  </span>
 
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-bold text-ink">{way.title}</h3>
-                    <p className="mt-0.5 text-sm font-semibold leading-relaxed text-ink/60">
-                      <HighlightedDesc desc={way.desc} highlightWords={way.highlightWords} />
-                    </p>
+                    <div className="min-w-0 flex-1 pt-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-sm font-bold text-ink">{step.title}</h3>
+                        {step.highlight && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-gold-600">
+                            {step.badgeLabel}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-0.5 text-sm font-semibold leading-relaxed text-ink/60">{step.desc}</p>
+                    </div>
                   </div>
+
+                  {i < STEPS.length - 1 && (
+                    <div className="flex gap-4 pl-3">
+                      <div className="flex w-11 shrink-0 justify-center">
+                        <ChevronDown className="h-4 w-4 text-gold-400/50" strokeWidth={2} />
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
