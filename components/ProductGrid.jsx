@@ -1,7 +1,7 @@
 import ProductCard from "./ProductCard";
 import SherwaniGlyph from "./SherwaniGlyph";
 
-export default function ProductGrid({ products, emptyMessage = "No products found." }) {
+export default function ProductGrid({ products, emptyMessage = "No products found.", typeParam }) {
   if (!products || products.length === 0) {
     return (
       <div className="flex flex-col items-center rounded-[2rem] border border-dashed border-gold-400/25 bg-white px-6 py-24 text-center shadow-soft">
@@ -18,7 +18,7 @@ export default function ProductGrid({ products, emptyMessage = "No products foun
     <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-3">
       {products.map((product, i) => (
         <div key={product.id} className="h-full animate-fadeUp opacity-0" style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}>
-          <ProductCard product={product} />
+          <ProductCard product={product} typeParam={typeParam} />
         </div>
       ))}
     </div>

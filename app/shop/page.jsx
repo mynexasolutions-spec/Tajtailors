@@ -312,6 +312,7 @@ export default async function ShopPage({ searchParams }) {
               <ProductGrid
                 products={safeProducts}
                 emptyMessage="No products yet. Message us on WhatsApp for help."
+                typeParam={params.type}
               />
               {paginationNav}
             </div>
@@ -326,6 +327,7 @@ export default async function ShopPage({ searchParams }) {
                 <ProductGrid
                   products={safeProducts}
                   emptyMessage="No products match these filters yet. Try clearing a filter, or message us on WhatsApp for help."
+                  typeParam={params.type}
                 />
                 {paginationNav}
               </div>

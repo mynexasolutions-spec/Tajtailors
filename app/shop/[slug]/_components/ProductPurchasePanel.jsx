@@ -314,12 +314,19 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
     ? preselectedFabric.variants.find((v) => v.id === searchParams.get("variant")) || preselectedFabric.variants[0]
     : null;
 
+  // The shop grid appends ?type=outfit to a product's link only when the
+  // customer got there via the "Stitch My Fabric" card/nav link — a plain
+  // product open (search, related products, direct link) carries no type,
+  // so only that specific flow should default to "own fabric" below.
+  const cameFromStitchMyFabric = searchParams.get("type") === "outfit" && !preselectedFabric;
+
   const [selectedFabricId, setSelectedFabricId] = useState(preselectedFabric?.id || null);
-  const [ownFabric, setOwnFabric] = useState(false);
+  const [ownFabric, setOwnFabric] = useState(cameFromStitchMyFabric);
   // Arriving with a fabric already picked (from the fabric page's "What Can
-  // Be Made" flow) shouldn't ask the customer to choose it again — show a
-  // compact confirmation instead of the full picker, expandable via "Change".
-  const [showFabricPicker, setShowFabricPicker] = useState(!preselectedFabric);
+  // Be Made" flow), or defaulting to own fabric above, shouldn't ask the
+  // customer to choose it again — show a compact confirmation instead of the
+  // full picker, expandable via "Change".
+  const [showFabricPicker, setShowFabricPicker] = useState(!preselectedFabric && !cameFromStitchMyFabric);
   const [measurementType, setMeasurementType] = useState("manual");
   const [selectedVariantId, setSelectedVariantId] = useState(preselectedVariant?.id || null);
   // Per-section measurement state, keyed by section key ("kurta"/"pajama"/
@@ -526,6 +533,16 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
               <span className="block truncate text-base font-bold text-ink">{fabricDisplayName}</span>
             </span>
             <span className="shrink-0 text-xs font-bold uppercase tracking-widest text-gold-600 group-hover:underline">Change</span>
+          </button>
+        )}
+
+        {!showFabricPicker && ownFabric && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("measure")}
+            className="btn-gold w-full py-3 text-xs font-semibold tracking-widest uppercase flex items-center justify-center gap-2"
+          >
+            Continue to Measurements <ArrowRight className="h-3.5 w-3.5" />
           </button>
         )}
 

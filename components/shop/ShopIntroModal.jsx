@@ -36,6 +36,10 @@ export default function ShopIntroModal({ show }) {
 
   useEffect(() => {
     if (!show) return;
+    try {
+      if (localStorage.getItem("tajtailor_shop_intro_seen")) return;
+      localStorage.setItem("tajtailor_shop_intro_seen", "1");
+    } catch {}
     setOpen(true);
     const raf = requestAnimationFrame(() => setEntered(true));
     return () => cancelAnimationFrame(raf);

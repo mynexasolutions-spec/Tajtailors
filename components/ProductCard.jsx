@@ -8,7 +8,7 @@ import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
 import { useWishlist } from "@/context/WishlistContext";
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, typeParam }) {
   const { addToCart } = useCart();
   const { showToast } = useToast();
   const { toggleWishlist, isInWishlist } = useWishlist();
@@ -47,7 +47,7 @@ export default function ProductCard({ product }) {
 
   return (
     <Link
-      href={`/shop/${product.slug}`}
+      href={typeParam ? `/shop/${product.slug}?type=${typeParam}` : `/shop/${product.slug}`}
       className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-ink/10 bg-white shadow-soft transition-all duration-500 hover:-translate-y-1 hover:border-gold-400/50 hover:shadow-gold"
     >
       <div className="relative aspect-square shrink-0 overflow-hidden bg-ivory-deep">
