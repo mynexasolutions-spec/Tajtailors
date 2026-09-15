@@ -186,6 +186,23 @@ export default function ProductForm({ product, categories, fabricOptions = [], g
 
               {productType === "outfit" && (
                 <div>
+                  <label className={labelClass}>Fabric Needed for a Child (meters)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    name="child_fabric_meters_required"
+                    defaultValue={product?.child_fabric_meters_required || ""}
+                    placeholder="e.g. 1.2"
+                    className={inputClass}
+                  />
+                  <p className="mt-1.5 text-xs text-ink/40">
+                    Used instead of the adult amount above when the customer ticks "This is for a child". Leave blank to use the adult amount for children too.
+                  </p>
+                </div>
+              )}
+
+              {productType === "outfit" && (
+                <div>
                   <label className={labelClass}>Garment Type</label>
                   <select name="garment_type" defaultValue={product?.garment_type || ""} className={inputClass}>
                     <option value="">Select garment type</option>

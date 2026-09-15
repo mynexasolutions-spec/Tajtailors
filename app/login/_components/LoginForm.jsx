@@ -5,12 +5,11 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import { login } from "@/actions/auth";
-import { whatsappLink } from "@/lib/constants";
 
 const inputClass =
   "w-full rounded-2xl border border-ink/10 bg-black/[0.025] py-4 pl-12 pr-4 text-base text-ink placeholder:text-ink/35 transition-all duration-500 focus:border-gold-400/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-400/20 hover:border-gold-400/30";
 
-export default function LoginForm({ brandInfo }) {
+export default function LoginForm() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/";
   const [state, formAction, pending] = useActionState(login, {});
@@ -70,17 +69,6 @@ export default function LoginForm({ brandInfo }) {
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
-        </div>
-
-        <div className="flex justify-end pt-1">
-          <a
-            href={whatsappLink("Hi Taj Tailor, I forgot my account password and need help.", brandInfo)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-ink/40 hover:text-gold-600 transition-colors duration-300"
-          >
-            Forgot password?
-          </a>
         </div>
 
         {/* Submit Button */}

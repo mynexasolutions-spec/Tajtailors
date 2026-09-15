@@ -11,7 +11,7 @@ import ProductPurchasePanel from "./_components/ProductPurchasePanel";
 import { ProductVariantProvider } from "./_components/ProductVariantContext";
 import ReviewForm from "./_components/ReviewForm";
 import ReviewsList from "./_components/ReviewsList";
-import { getProductBySlug, getRelatedProducts, getCompatibleOutfits, getCompatibleFabrics, getGarmentTypes, getExtraWorkOptions } from "@/actions/products";
+import { getProductBySlug, getRelatedProducts, getCompatibleOutfits, getCompatibleFabrics, getGarmentTypes, getExtraWorkOptions, getGarmentAddOns } from "@/actions/products";
 import { getSiteSettings } from "@/actions/settings";
 import { settingsToBrand } from "@/lib/constants";
 import Reveal from "@/components/Reveal";
@@ -40,6 +40,7 @@ export default async function ProductDetailPage({ params }) {
   const compatibleFabrics = product.product_type === "outfit" ? await getCompatibleFabrics(product.id) : [];
   const garmentTypes = product.product_type === "fabric" || product.product_type === "outfit" ? await getGarmentTypes() : [];
   const extraWorkOptions = product.product_type === "outfit" ? await getExtraWorkOptions(product.id) : [];
+  const garmentAddOns = product.product_type === "outfit" ? await getGarmentAddOns(product.garment_type) : [];
   const brandInfo = settingsToBrand(await getSiteSettings());
 
   // Fabric/kurta attributes shown as detail cards
@@ -55,6 +56,7 @@ export default async function ProductDetailPage({ params }) {
   const safeCompatibleFabrics = JSON.parse(JSON.stringify(compatibleFabrics));
   const safeGarmentTypes = JSON.parse(JSON.stringify(garmentTypes));
   const safeExtraWorkOptions = JSON.parse(JSON.stringify(extraWorkOptions));
+  const safeGarmentAddOns = JSON.parse(JSON.stringify(garmentAddOns));
 
   return (
     <>
@@ -166,6 +168,7 @@ export default async function ProductDetailPage({ params }) {
                     compatibleFabrics={safeCompatibleFabrics}
                     garmentTypes={safeGarmentTypes}
                     extraWorkOptions={safeExtraWorkOptions}
+                    garmentAddOns={safeGarmentAddOns}
                     brandInfo={brandInfo}
                   />
                 </Suspense>

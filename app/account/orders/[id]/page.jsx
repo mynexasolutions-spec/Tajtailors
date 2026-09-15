@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Package, MapPin, CreditCard, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Package, MapPin, CreditCard, CheckCircle2, Ruler } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import SherwaniGlyph from "@/components/SherwaniGlyph";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import { createClient } from "@/lib/supabase/server";
+import { measurementLines, priceBreakdownLines } from "@/lib/orderMeasurements";
 import DelhiveryTracking from "./_components/DelhiveryTracking";
 import ReferenceGarmentPickupStatus from "./_components/ReferenceGarmentPickupStatus";
 
@@ -30,7 +31,7 @@ export default async function OrderDetailPage({ params }) {
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "id, order_number, subtotal, shipping_cost, discount_amount, coupon_discount, quantity_discount, coupon_code, total_amount, payment_method, payment_status, order_status, created_at, tracking_number, courier_name, tracking_url, shipment_status, pickup_required, pickup_waybill, pickup_tracking_url, pickup_status, order_items ( id, product_name, variant_name, quantity, line_total, products:products!product_id ( product_type, featured_image_url ) ), addresses:addresses!address_id ( full_name, phone, address_line_1, address_line_2, city, state, postal_code )"
+      "id, order_number, subtotal, shipping_cost, discount_amount, coupon_discount, quantity_discount, coupon_code, total_amount, payment_method, payment_status, order_status, created_at, tracking_number, courier_name, tracking_url, shipment_status, pickup_required, pickup_waybill, pickup_tracking_url, pickup_status, order_items ( id, product_name, variant_name, quantity, line_total, fabric_meters, measurement_type, measurements, notes, products:products!product_id ( product_type, featured_image_url ), fabric:products!fabric_product_id ( name ) ), addresses:addresses!address_id ( full_name, phone, address_line_1, address_line_2, city, state, postal_code )"
     )
     .eq("id", id)
     .eq("user_id", user.id)
@@ -88,26 +89,91 @@ export default async function OrderDetailPage({ params }) {
               </div>
               <ul className="divide-y divide-ink/10 relative z-10">
                 {order.order_items.map((item) => (
-                  <li key={item.id} className="flex items-center gap-3 py-4 text-base">
-                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-ink/10 bg-ivory-deep">
-                      {item.products?.featured_image_url ? (
-                        <Image src={item.products.featured_image_url} alt="" fill sizes="56px" className="object-cover" />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center">
-                          <SherwaniGlyph className="h-7 w-auto text-ink/25" />
-                        </div>
-                      )}
+                  <li key={item.id} className="py-4 text-base">
+                    <div className="flex items-center gap-3">
+                      <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-ink/10 bg-ivory-deep">
+                        {item.products?.featured_image_url ? (
+                          <Image src={item.products.featured_image_url} alt="" fill sizes="56px" className="object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center">
+                            <SherwaniGlyph className="h-7 w-auto text-ink/25" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-ink font-bold">{item.product_name}</p>
+                        <p className="text-ink/60 font-semibold mt-1 text-sm">
+                          {item.variant_name ? `${item.variant_name} · ` : ""}
+                          {item.products?.product_type === "fabric" ? `${item.quantity}m` : `Qty ${item.quantity}`}
+                        </p>
+                      </div>
+                      <span className="shrink-0 text-lg font-bold text-gold-700">
+                        ₹{Number(item.line_total).toLocaleString("en-IN")}
+                      </span>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-ink font-bold">{item.product_name}</p>
-                      <p className="text-ink/60 font-semibold mt-1 text-sm">
-                        {item.variant_name ? `${item.variant_name} · ` : ""}
-                        {item.products?.product_type === "fabric" ? `${item.quantity}m` : `Qty ${item.quantity}`}
-                      </p>
-                    </div>
-                    <span className="shrink-0 text-lg font-bold text-gold-700">
-                      ₹{Number(item.line_total).toLocaleString("en-IN")}
-                    </span>
+
+                    {/* Stitching orders: fabric + measurements, same info the
+                        tailor works from — so the customer can double-check
+                        what they submitted without messaging support. */}
+                    {item.measurement_type && (
+                      <div className="mt-3 ml-[4.25rem] space-y-1.5 rounded-xl border border-gold-400/15 bg-ivory-deep p-4 text-sm">
+                        <p className="flex items-center gap-1.5 font-bold uppercase tracking-wide text-gold-600/90 text-xs">
+                          <Ruler className="h-3.5 w-3.5" /> Fabric &amp; Measurements
+                        </p>
+                        <p className="text-ink/80 font-semibold">
+                          Fabric: {item.fabric?.name ? `${item.fabric.name} (${item.fabric_meters}m)` : "Your own fabric"}
+                        </p>
+                        {item.measurement_type === "reference_garment" ? (
+                          <p className="text-ink/80 font-semibold">You sent a reference garment for sizing.</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-ink/80 font-semibold">
+                            {measurementLines(item.measurements).map(([label, value]) => (
+                              <span key={label}>{label}: <span className="text-ink font-bold">{value}</span></span>
+                            ))}
+                          </div>
+                        )}
+                        {item.measurements?.extraWork?.length > 0 && (
+                          <p className="text-ink/80 font-semibold">
+                            Extra Work:{" "}
+                            <span className="text-ink font-bold">
+                              {item.measurements.extraWork.map((e) => (typeof e === "string" ? e : `${e.label}${e.price > 0 ? ` (+₹${e.price})` : ""}`)).join(", ")}
+                            </span>
+                          </p>
+                        )}
+                        {item.measurements?.addOn && (
+                          <div className="flex items-center gap-2.5 text-ink/80 font-semibold">
+                            {item.measurements.addOn.image && (
+                              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-ink/10 bg-white">
+                                <Image src={item.measurements.addOn.image} alt="" fill sizes="40px" className="object-cover" />
+                              </div>
+                            )}
+                            <p>
+                              Add-on:{" "}
+                              <span className="text-ink font-bold">
+                                {item.measurements.addOn.name} (+₹{item.measurements.addOn.price}
+                                {item.measurements.addOn.meters ? `, +${item.measurements.addOn.meters}m fabric` : ""})
+                              </span>
+                            </p>
+                          </div>
+                        )}
+                        {item.notes && <p className="text-ink/60 font-semibold italic">Description: "{item.notes}"</p>}
+                        {priceBreakdownLines(item.measurements?.priceBreakdown).length > 1 && (
+                          <div className="mt-2 space-y-1 border-t border-gold-400/10 pt-2">
+                            <p className="font-bold uppercase tracking-wide text-gold-600/90 text-xs">Price Breakdown</p>
+                            {priceBreakdownLines(item.measurements.priceBreakdown).map(([label, amount]) => (
+                              <div key={label} className="flex justify-between text-ink/70 font-semibold">
+                                <span>{label}</span>
+                                <span className="text-ink font-bold">₹{Number(amount).toLocaleString("en-IN")}</span>
+                              </div>
+                            ))}
+                            <div className="flex justify-between border-t border-gold-400/10 pt-1 font-bold text-ink">
+                              <span>Total</span>
+                              <span>₹{Number(item.line_total).toLocaleString("en-IN")}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

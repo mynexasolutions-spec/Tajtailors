@@ -4,7 +4,7 @@ import { ArrowLeft, ChevronRight, Shirt } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import FlowStepper from "@/components/shop/FlowStepper";
-import { getProductBySlug, getCompatibleOutfits, getGarmentTypes } from "@/actions/products";
+import { getProductBySlug, getCompatibleOutfits, getGarmentTypes, getGarmentAddOns } from "@/actions/products";
 import OutfitPicker from "@/components/shop/OutfitPicker";
 
 export async function generateMetadata({ params }) {
@@ -23,13 +23,18 @@ export default async function ChooseGarmentTypePage({ params, searchParams }) {
   const fabric = await getProductBySlug(slug);
   if (!fabric || fabric.product_type !== "fabric") notFound();
 
-  const [allOutfits, garmentTypes] = await Promise.all([getCompatibleOutfits(fabric.id), getGarmentTypes()]);
+  const [allOutfits, garmentTypes, garmentAddOns] = await Promise.all([
+    getCompatibleOutfits(fabric.id),
+    getGarmentTypes(),
+    getGarmentAddOns(garmentType),
+  ]);
   const options = allOutfits.filter((o) => o.garmentType === garmentType);
   if (options.length === 0) notFound();
 
   const garmentTypeInfo = garmentTypes.find((g) => g.key === garmentType);
   const label = garmentTypeInfo?.label || garmentType;
   const variantId = variant || fabric.variants?.[0]?.id || "";
+  const addOnLabel = garmentTypes.find((g) => g.key === garmentAddOns[0]?.garmentType)?.label;
 
   return (
     <>
@@ -75,7 +80,13 @@ export default async function ChooseGarmentTypePage({ params, searchParams }) {
           </div>
 
           {/* Options grid — tap to select, then Continue confirms */}
-          <OutfitPicker options={options} fabricId={fabric.id} variantId={variantId} />
+          <OutfitPicker
+            options={options}
+            fabricId={fabric.id}
+            variantId={variantId}
+            garmentAddOns={garmentAddOns}
+            addOnLabel={addOnLabel}
+          />
         </div>
       </main>
       <Footer />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Minus, Plus, ShoppingBag, MessageSquare, Check, Zap, Ruler, Shirt, ArrowRight, PackageCheck } from "lucide-react";
@@ -298,7 +298,7 @@ function MeasurementsStep({
   );
 }
 
-function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypesByKey, extraWorkOptions }) {
+function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypesByKey, extraWorkOptions, garmentAddOns = [] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToCart, setDrawerOpen } = useCart();
@@ -337,10 +337,32 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
   const [extraWork, setExtraWork] = useState([]);
   const [notes, setNotes] = useState("");
   const measurementSections = getMeasurementSections(product.garment_type, garmentTypesByKey);
+  // A child needs noticeably less fabric than an adult — when any section is
+  // marked "for a child", fall back to the product's own admin-set child
+  // amount instead of the adult default, so the customer isn't quoted (and
+  // charged for) full-size fabric for a kid's outfit.
+  const anyChildSelected = measurementSections.some((s) => sectionsData[s.key]?._forChild);
+  const effectiveMeters =
+    anyChildSelected && product.child_fabric_meters_required ? product.child_fabric_meters_required : meters;
+  // Cross-sell: a Kurta order commonly wants a matching Pajama too. Which
+  // style (if any) is chosen earlier, on the style-picker page (OutfitPicker)
+  // — it carries forward as ?addon=<productId> so it folds into this order's
+  // price and measurements without asking the customer to repeat themselves.
+  const garmentAddOn = garmentAddOns.find((a) => a.id === searchParams.get("addon")) || null;
+  const addOnEnabled = Boolean(garmentAddOn);
+  const addOnMeasurementSections = garmentAddOn ? getMeasurementSections(garmentAddOn.garmentType, garmentTypesByKey) : [];
+  const activeMeasurementSections = addOnEnabled ? [...measurementSections, ...addOnMeasurementSections] : measurementSections;
   // Editable meters — the standard amount is a starting point, but cutting
   // style/body size can need more, so the customer can bump it up themselves
   // and pay for the extra instead of needing a call to sort it out later.
   const [customMeters, setCustomMeters] = useState(meters);
+  // Re-baseline to the child amount (or back to the adult one) whenever the
+  // "for a child" checkbox changes, instead of leaving whatever was picked
+  // for the wrong size — the customer can still bump it up manually after.
+  useEffect(() => {
+    setCustomMeters(effectiveMeters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [anyChildSelected]);
   // Which of the three steps is showing — only one at a time, instead of
   // stacking Fabric + Measurements + Review together in one long scroll
   // next to the sticky gallery, which read as confusing/disconnected.
@@ -367,14 +389,18 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
   const fabricCost = selectedVariant ? selectedVariant.price * customMeters : 0;
   const selectedExtraWork = extraWorkOptions.filter((o) => extraWork.includes(o.id));
   const extraWorkCost = selectedExtraWork.reduce((sum, o) => sum + Number(o.price || 0), 0);
-  const totalPrice = stitchingVariant.price + fabricCost + extraWorkCost;
+  // Add-on's own fabric only costs extra when buying a catalog fabric — with
+  // an own-fabric order the customer is already sending enough for both.
+  const addOnFabricCost = addOnEnabled && selectedVariant ? selectedVariant.price * (garmentAddOn?.metersRequired || 0) : 0;
+  const addOnStitchingCost = addOnEnabled ? garmentAddOn?.price || 0 : 0;
+  const totalPrice = stitchingVariant.price + fabricCost + extraWorkCost + addOnStitchingCost + addOnFabricCost;
   const fabricChosen = ownFabric || Boolean(selectedVariant);
 
   const chooseFabric = (id) => {
     setSelectedFabricId(id);
     setSelectedVariantId(compatibleFabrics.find((f) => f.id === id)?.variants[0]?.id || null);
     setOwnFabric(false);
-    setCustomMeters(meters);
+    setCustomMeters(effectiveMeters);
     setShowFabricPicker(false);
     // Stay on the fabric step so the customer picks a color and confirms
     // how many meters to cut before moving to measurements — jumping
@@ -384,7 +410,7 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
     setSelectedFabricId(null);
     setSelectedVariantId(null);
     setOwnFabric(true);
-    setCustomMeters(meters);
+    setCustomMeters(effectiveMeters);
     setShowFabricPicker(false);
     setActiveTab("measure");
   };
@@ -409,25 +435,52 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
     fabricProductId: selectedFabric ? selectedFabric.id : null,
     fabricVariantId: selectedVariant ? selectedVariant.id : null,
     fabricName: fabricDisplayName,
-    meters: selectedVariant ? customMeters : meters,
+    meters: selectedVariant ? customMeters + (addOnEnabled ? garmentAddOn?.metersRequired || 0 : 0) : effectiveMeters,
     ownFabric: !selectedVariant,
     measurementType,
+    // How totalPrice actually adds up — shown at checkout and in order
+    // details so "₹1,825 total" doesn't read as an unexplained lump sum once
+    // fabric, extra work and an add-on are all stacked into one line item.
+    priceBreakdown: {
+      stitching: stitchingVariant.price,
+      fabric: fabricCost,
+      extraWork: extraWorkCost,
+      addOnStitching: addOnStitchingCost,
+      addOnFabric: addOnFabricCost,
+    },
     measurements: {
       garmentType: product.garment_type || null,
       ...(measurementType === "manual"
-        ? Object.fromEntries(measurementSections.map((s) => [s.key, sectionsData[s.key] || {}]))
+        ? Object.fromEntries(activeMeasurementSections.map((s) => [s.key, sectionsData[s.key] || {}]))
         : {}),
       // Snapshot label + price at order time, not just the option id — admin
       // can rename/reprice/delete extra work options later without corrupting
       // what past orders actually show and charged.
       extraWork: selectedExtraWork.map((o) => ({ label: o.label, price: o.price })),
+      ...(addOnEnabled && garmentAddOn
+        ? {
+            addOn: {
+              name: garmentAddOn.name,
+              price: garmentAddOn.price,
+              meters: selectedVariant ? garmentAddOn.metersRequired : 0,
+              image: garmentAddOn.image || null,
+            },
+          }
+        : {}),
+      priceBreakdown: {
+        stitching: stitchingVariant.price,
+        fabric: fabricCost,
+        extraWork: extraWorkCost,
+        addOnStitching: addOnStitchingCost,
+        addOnFabric: addOnFabricCost,
+      },
     },
     notes: notes || null,
   });
 
   const validateMeasurements = () => {
     if (measurementType === "manual") {
-      for (const s of measurementSections) {
+      for (const s of activeMeasurementSections) {
         const data = sectionsData[s.key] || {};
         if (data._forChild) {
           if (!data.age) {
@@ -479,6 +532,7 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
           ₹{stitchingVariant.price.toLocaleString("en-IN")} stitching
           {Boolean(selectedVariant) && ` + fabric (${customMeters}m)`}
           {extraWorkCost > 0 && ` + extra work`}
+          {addOnEnabled && garmentAddOn && ` + ${garmentAddOn.name} (₹${garmentAddOn.price.toLocaleString("en-IN")})`}
         </span>
       </div>
 
@@ -535,6 +589,10 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
             <span className="shrink-0 text-xs font-bold uppercase tracking-widest text-gold-600 group-hover:underline">Change</span>
           </button>
         )}
+
+        {/* The Pajama add-on itself is offered earlier, on the style-picker
+            page (OutfitPicker) — arriving here with ?addon= already reflects
+            that choice in the price/measurements below without asking again. */}
 
         {!showFabricPicker && ownFabric && (
           <button
@@ -673,16 +731,18 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gold-600">Fabric Needed</p>
-                <p className="mt-1 text-sm font-semibold text-ink/55">Standard is {meters}m — increase it if you need extra.</p>
+                <p className="mt-1 text-sm font-semibold text-ink/55">
+                  Standard is {effectiveMeters}m{anyChildSelected && " (child)"} — increase it if you need extra.
+                </p>
               </div>
               <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-gold-400/20 bg-white px-3.5 py-2">
                 <input
                   type="number"
                   step="0.5"
-                  min={meters}
+                  min={effectiveMeters}
                   value={customMeters}
                   onChange={(e) => setCustomMeters(e.target.value === "" ? "" : Number(e.target.value))}
-                  onBlur={(e) => setCustomMeters(Math.max(meters, Number(e.target.value) || meters))}
+                  onBlur={(e) => setCustomMeters(Math.max(effectiveMeters, Number(e.target.value) || effectiveMeters))}
                   className="w-16 rounded-lg border-none bg-transparent text-center text-base font-semibold text-ink focus:outline-none focus:ring-1 focus:ring-gold-400/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   aria-label="Fabric meters needed"
                 />
@@ -705,7 +765,7 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
       {activeTab === "measure" && (
       <MeasurementsStep
         step={2}
-        sections={measurementSections}
+        sections={activeMeasurementSections}
         sectionsData={sectionsData}
         updateSection={updateSection}
         measurementType={measurementType}
@@ -731,7 +791,7 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
                 {selectedVariant && <span className="font-semibold text-ink/45"> · {customMeters}m</span>}
               </span>
             </div>
-            {measurementSections.map((s) => {
+            {activeMeasurementSections.map((s) => {
               const data = sectionsData[s.key] || {};
               const isChild = data._forChild;
               return (
@@ -753,6 +813,14 @@ function OutfitConfigurator({ product, variants, compatibleFabrics, garmentTypes
               <div className="flex items-start justify-between gap-3">
                 <span className="font-semibold text-ink/55">Extra Work</span>
                 <span className="text-right font-bold text-ink">{selectedExtraWork.map((o) => o.label).join(", ")}</span>
+              </div>
+            )}
+            {addOnEnabled && garmentAddOn && (
+              <div className="flex items-start justify-between gap-3">
+                <span className="font-semibold text-ink/55">Add-on</span>
+                <span className="text-right font-bold text-ink">
+                  {garmentAddOn.name} · ₹{garmentAddOn.price.toLocaleString("en-IN")}
+                </span>
               </div>
             )}
             <div className="flex items-center justify-between border-t border-ink/10 pt-2.5">
@@ -1155,6 +1223,7 @@ export default function ProductPurchasePanel({
   compatibleFabrics = [],
   garmentTypes = [],
   extraWorkOptions = [],
+  garmentAddOns = [],
   brandInfo,
 }) {
   const garmentTypesByKey = new Map(garmentTypes.map((g) => [g.key, g]));
@@ -1166,6 +1235,7 @@ export default function ProductPurchasePanel({
         compatibleFabrics={compatibleFabrics}
         garmentTypesByKey={garmentTypesByKey}
         extraWorkOptions={extraWorkOptions}
+        garmentAddOns={garmentAddOns}
       />
     );
   }

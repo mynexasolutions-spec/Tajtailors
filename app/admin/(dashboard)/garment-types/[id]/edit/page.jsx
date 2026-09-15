@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getGarmentTypeById } from "@/actions/admin/garmentTypes";
+import { getGarmentTypeById, getAllGarmentTypesAdmin } from "@/actions/admin/garmentTypes";
 import GarmentTypeForm from "../../_components/GarmentTypeForm";
 
 export const metadata = { title: "Edit Garment Type" };
 
 export default async function EditGarmentTypePage({ params }) {
   const { id } = await params;
-  const garmentType = await getGarmentTypeById(id);
+  const [garmentType, allGarmentTypes] = await Promise.all([getGarmentTypeById(id), getAllGarmentTypesAdmin()]);
   if (!garmentType) notFound();
 
   return (
@@ -22,7 +22,7 @@ export default async function EditGarmentTypePage({ params }) {
       <h1 className="mb-6 font-display text-3xl font-light text-ink">
         Edit <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-gold-600 via-gold-500 to-gold-700">{garmentType.label}</span>
       </h1>
-      <GarmentTypeForm garmentType={garmentType} />
+      <GarmentTypeForm garmentType={garmentType} allGarmentTypes={allGarmentTypes} />
     </div>
   );
 }

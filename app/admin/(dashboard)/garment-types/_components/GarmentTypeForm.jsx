@@ -22,7 +22,7 @@ function keyPreview(text) {
     .replace(/(^_|_$)/g, "");
 }
 
-export default function GarmentTypeForm({ garmentType }) {
+export default function GarmentTypeForm({ garmentType, allGarmentTypes = [] }) {
   const isEditing = !!garmentType;
   const action = isEditing ? updateGarmentType : createGarmentType;
   const [state, formAction, pending] = useActionState(action, {});
@@ -32,7 +32,11 @@ export default function GarmentTypeForm({ garmentType }) {
   const [imageUrl, setImageUrl] = useState(garmentType?.image_url || null);
   const [measurementKind, setMeasurementKind] = useState(normalizeMeasurementKind(garmentType?.measurement_kind));
   const [fields, setFields] = useState(garmentType?.fields || []);
+  const [addonGarmentType, setAddonGarmentType] = useState(garmentType?.addon_garment_type || "");
   const isSet = measurementKind === "kurta_pajama_set" || measurementKind === "kurta_pant_set";
+  // Other garment types this one could cross-sell against (e.g. Kurta -> Pajama)
+  // — excludes itself, since offering a Kurta as its own add-on makes no sense.
+  const addonOptions = allGarmentTypes.filter((g) => g.key !== garmentType?.key);
 
   // The "age" field is a special, admin-toggled add-on, not a manually
   // configured one — it never replaces the regular fields. On the storefront
@@ -173,6 +177,24 @@ export default function GarmentTypeForm({ garmentType }) {
                   />
                 </span>
               </button>
+            </div>
+
+            <div>
+              <label className={labelClass}>Cross-sell Add-on</label>
+              <select
+                name="addon_garment_type"
+                value={addonGarmentType}
+                onChange={(e) => setAddonGarmentType(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">None</option>
+                {addonOptions.map((g) => (
+                  <option key={g.key} value={g.key}>{g.label}</option>
+                ))}
+              </select>
+              <p className="mt-2 text-sm text-ink/35">
+                When a customer stitches this garment (e.g. Kurta), every active outfit of the selected type (e.g. Pajama) is offered as a matching add-on on the style-picker and product pages.
+              </p>
             </div>
 
             <div>

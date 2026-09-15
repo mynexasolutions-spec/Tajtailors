@@ -9,6 +9,7 @@ import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
 import { processCheckout, verifyRazorpayPayment, validateCoupon } from "@/actions/checkout";
 import { calculateQuantityDiscount } from "@/lib/constants";
+import { priceBreakdownLines } from "@/lib/orderMeasurements";
 import SherwaniGlyph from "@/components/SherwaniGlyph";
 
 const inputClass =
@@ -580,6 +581,22 @@ export default function CheckoutForm({ codEnabled, razorpayEnabled, shipping, qu
                       {item.ownFabric ? "Customer's own fabric" : `${item.fabricName} (${item.meters}m)`}
                       {item.measurementType === "reference_garment" && " · Reference garment"}
                     </p>
+                  )}
+                  {item.measurements?.addOn && (
+                    <p className="text-sm text-ink/50 font-semibold">+ {item.measurements.addOn.name}</p>
+                  )}
+                  {/* Price breakdown — so the line total below doesn't read as
+                      an unexplained lump sum once fabric/extra work/an add-on
+                      are all stacked into it. */}
+                  {priceBreakdownLines(item.priceBreakdown).length > 1 && (
+                    <ul className="mt-1.5 space-y-0.5">
+                      {priceBreakdownLines(item.priceBreakdown).map(([label, amount]) => (
+                        <li key={label} className="flex justify-between gap-3 text-xs font-semibold text-ink/45">
+                          <span>{label}</span>
+                          <span>₹{Number(amount).toLocaleString("en-IN")}</span>
+                        </li>
+                      ))}
+                    </ul>
                   )}
                   <div className="flex items-center justify-between mt-2">
                     {item.productType === "fabric" ? (

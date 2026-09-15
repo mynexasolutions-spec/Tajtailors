@@ -148,7 +148,7 @@ export async function getProductBySlug(slug) {
       .select(`
         id, name, slug, category_id, is_active, badge, product_type, fabric_type, fabric_type_description, color, color_description,
         average_rating, review_count, short_description, description, featured_image_url,
-        fabric_meters_required, garment_type,
+        fabric_meters_required, child_fabric_meters_required, garment_type,
         product_images ( id, image_url, sort_order, variant_name, color_name ),
         product_variants ( id, variant_name, price, original_price, stock_quantity, is_active, color_hex, color_name, size_name ),
         product_faqs ( id, question, answer, display_order )
@@ -329,6 +329,58 @@ export async function getExtraWorkOptions(productId) {
       .map(({ id, label, price }) => ({ id, label, price }));
   } catch (err) {
     console.error("Fetch extra work options error:", err);
+    return [];
+  }
+}
+
+// Cross-sell add-ons for a garment type — e.g. offering every Pajama style
+// alongside a Kurta stitching order, since customers usually want both
+// together, not the Kurta alone. Which garment type pairs with which is
+// admin-managed (garment_types.addon_garment_type), not hardcoded, so a new
+// pairing (e.g. Sherwani <-> Churidar) needs no code change. Returns every
+// active outfit of the target type (not just one) so the customer picks
+// which style, same as browsing outfits normally — price/fabric-meters/
+// measurement fields all stay data-driven from the real products.
+export async function getGarmentAddOns(garmentType) {
+  try {
+    const supabase = await createClient();
+    const { data: ownType } = await supabase
+      .from("garment_types")
+      .select("addon_garment_type")
+      .eq("key", garmentType)
+      .maybeSingle();
+    const targetType = ownType?.addon_garment_type;
+    if (!targetType) return [];
+
+    const { data, error } = await supabase
+      .from("products")
+      .select(`
+        id, name, slug, garment_type, fabric_meters_required, featured_image_url,
+        product_images ( image_url, sort_order ),
+        product_variants ( price, is_active )
+      `)
+      .eq("product_type", "outfit")
+      .eq("garment_type", targetType)
+      .eq("is_active", true)
+      .order("created_at", { ascending: true });
+
+    if (error || !data) return [];
+
+    return data
+      .map((p) => {
+        const price = (p.product_variants || [])
+          .filter((v) => v.is_active)
+          .reduce((min, v) => (min == null || v.price < min ? v.price : min), null);
+        if (price == null) return null;
+        const image =
+          p.featured_image_url ||
+          [...(p.product_images || [])].sort((a, b) => a.sort_order - b.sort_order)[0]?.image_url ||
+          null;
+        return { id: p.id, name: p.name, slug: p.slug, garmentType: p.garment_type, price, metersRequired: p.fabric_meters_required || 0, image };
+      })
+      .filter(Boolean);
+  } catch (err) {
+    console.error("Fetch garment add-ons error:", err);
     return [];
   }
 }

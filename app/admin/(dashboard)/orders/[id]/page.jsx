@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Package, MapPin, CreditCard, Ruler, Truck } from "lucide-react";
 import { getOrderById } from "@/actions/admin/orders";
+import { measurementLines, priceBreakdownLines } from "@/lib/orderMeasurements";
 import OrderStatusManager from "./_components/OrderStatusManager";
 import DelhiveryShipmentManager from "./_components/DelhiveryShipmentManager";
 import ReferenceGarmentPickupManager from "./_components/ReferenceGarmentPickupManager";
@@ -13,55 +14,7 @@ export const metadata = { title: "Order Detail" };
 const panelClass =
   "rounded-[2rem] border border-gold-400/15 bg-white p-6 shadow-soft md:p-8";
 
-// Best-effort labels for known style/fit keys from the original hardcoded
-// Kurta/Pajama field sets — admin-added custom fields/styles (via Garment
-// Types) fall back to their raw key, which is still readable enough.
-const STYLE_LABELS = {
-  pathani: "Pathani Kurta", plain: "Plain Kurta", plain_half_placket: "Plain Half-Placket Kurta",
-  jawahar_cut: "Jawahar Cut", shirt: "Shirt Style",
-  pant_cut: "Pant-Cut", choodidar: "Choodidar", mughlai_shalwar: "Mughlai Shalwar", nadawar: "Nada-vaar (Drawstring)",
-  straight: "Straight", not_straight: "Not Straight",
-};
 const EXTRA_WORK_LABELS = { karigari: "Karigari / Embroidery Work", zari_buttons: "Zari Buttons" };
-
-function titleCase(key) {
-  return key.charAt(0).toUpperCase() + key.slice(1);
-}
-
-// Measurements are stored per section (kurta/pajama/pant, or a custom
-// garment type's own key) as { style, ...fieldKey: value }. Rendering walks
-// every section generically instead of assuming kurta/pajama/pant are the
-// only possibilities, so admin-defined garment types (e.g. "Kids Kurta")
-// display correctly too.
-function measurementLines(m) {
-  if (!m) return [];
-  const lines = [];
-
-  Object.entries(m).forEach(([sectionKey, section]) => {
-    if (sectionKey === "garmentType" || sectionKey === "extraWork") return;
-    if (!section || typeof section !== "object") return;
-    const sectionLabel = titleCase(sectionKey);
-
-    Object.entries(section).forEach(([fieldKey, value]) => {
-      if (!value) return;
-      if (fieldKey === "style") {
-        lines.push([`${sectionLabel} Style`, STYLE_LABELS[value] || value]);
-      } else if (fieldKey === "fit") {
-        lines.push([`${sectionLabel} Fit`, STYLE_LABELS[value] || value]);
-      } else if (fieldKey === "frontPlacket") {
-        lines.push(["Front Placket", value === "yes" ? "Yes" : "No"]);
-      } else if (value === "yes" || value === "no") {
-        lines.push([`${sectionLabel} ${titleCase(fieldKey)}`, value === "yes" ? "Yes" : "No"]);
-      } else if (fieldKey.toLowerCase().includes("age")) {
-        lines.push([`${sectionLabel} Age`, `${value} yr${Number(value) === 1 ? "" : "s"}`]);
-      } else {
-        lines.push([`${sectionLabel} ${titleCase(fieldKey)}`, `${value}"`]);
-      }
-    });
-  });
-
-  return lines;
-}
 
 export default async function AdminOrderDetailPage({ params }) {
   const { id } = await params;
@@ -152,7 +105,38 @@ export default async function AdminOrderDetailPage({ params }) {
                           </span>
                         </p>
                       )}
+                      {item.measurements?.addOn && (
+                        <div className="flex items-center gap-2.5 text-ink/80 font-semibold">
+                          {item.measurements.addOn.image && (
+                            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-ink/10 bg-white">
+                              <Image src={item.measurements.addOn.image} alt="" fill sizes="40px" className="object-cover" />
+                            </div>
+                          )}
+                          <p>
+                            Add-on:{" "}
+                            <span className="text-ink font-bold">
+                              {item.measurements.addOn.name} (+₹{item.measurements.addOn.price}
+                              {item.measurements.addOn.meters ? `, +${item.measurements.addOn.meters}m fabric` : ""})
+                            </span>
+                          </p>
+                        </div>
+                      )}
                       {item.notes && <p className="text-ink/60 font-semibold italic">Description: "{item.notes}"</p>}
+                      {priceBreakdownLines(item.measurements?.priceBreakdown).length > 1 && (
+                        <div className="mt-2 space-y-1 border-t border-gold-400/10 pt-2">
+                          <p className="font-bold uppercase tracking-wide text-gold-600/90 text-xs">Price Breakdown</p>
+                          {priceBreakdownLines(item.measurements.priceBreakdown).map(([label, amount]) => (
+                            <div key={label} className="flex justify-between text-ink/70 font-semibold">
+                              <span>{label}</span>
+                              <span className="text-ink font-bold">₹{Number(amount).toLocaleString("en-IN")}</span>
+                            </div>
+                          ))}
+                          <div className="flex justify-between border-t border-gold-400/10 pt-1 font-bold text-ink">
+                            <span>Total</span>
+                            <span>₹{Number(item.line_total).toLocaleString("en-IN")}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </li>

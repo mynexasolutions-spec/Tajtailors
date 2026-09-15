@@ -123,6 +123,7 @@ async function syncChildren(supabase, productId, { images, variants, faqs }) {
 
 function parseProductFields(formData) {
   const fabricMeters = formData.get("fabric_meters_required");
+  const childFabricMeters = formData.get("child_fabric_meters_required");
   return {
     name: formData.get("name"),
     product_code: formData.get("product_code") || null,
@@ -135,6 +136,7 @@ function parseProductFields(formData) {
     color: formData.get("color") || null,
     color_description: formData.get("color_description") || null,
     fabric_meters_required: fabricMeters ? Number(fabricMeters) : null,
+    child_fabric_meters_required: childFabricMeters ? Number(childFabricMeters) : null,
     garment_type: formData.get("garment_type") || null,
     badge: formData.get("badge") || null,
     featured_image_url: formData.get("featured_image_url") || null,

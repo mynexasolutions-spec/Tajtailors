@@ -3,8 +3,6 @@ import { redirect } from "next/navigation";
 import SiteHeader from "@/components/SiteHeader";
 import Footer from "@/components/Footer";
 import LoginForm from "./_components/LoginForm";
-import { getSiteSettings } from "@/actions/settings";
-import { settingsToBrand } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Log In" };
@@ -16,7 +14,6 @@ export default async function LoginPage() {
   } = await supabase.auth.getUser();
   if (user) redirect("/account");
 
-  const brandInfo = settingsToBrand(await getSiteSettings());
   return (
     <>
       <SiteHeader />
@@ -30,7 +27,7 @@ export default async function LoginPage() {
 
         <div className="relative z-10 flex w-full items-center justify-center">
           <Suspense fallback={null}>
-            <LoginForm brandInfo={brandInfo} />
+            <LoginForm />
           </Suspense>
         </div>
       </main>
