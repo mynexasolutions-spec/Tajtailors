@@ -16,9 +16,7 @@ export default async function AdminDashboardLayout({ children }) {
   // Cached (30s) — cheap to reuse here for the sidebar's nav badges.
   const stats = await getDashboardStats();
   const badges = {
-    "/admin/orders": stats.pendingOrders,
     "/admin/reviews": stats.pendingReviewCount,
-    "/admin/inquiries": stats.unresolvedInquiryCount,
   };
 
   return (
